@@ -21,67 +21,67 @@
 window.WORKS = [
 
   {
-    title: '潜江城市公交路线图',
+    title: 'Qianjiang City Bus Route Map',
     date:  '2026-09',
-    href:  'works/潜江城市公交路线图/',
-    thumb: 'works/潜江城市公交路线图/thumb.jpg',
-    tags:  ['专题地图']
+    href:  'works/2026-09/qianjiang-bus-route/',
+    thumb: 'works/2026-09/qianjiang-bus-route/thumb.jpg',
+    tags:  ['Thematic Map']
   },
 
   {
     title: 'Orthographic Projection Centered at a Specific Latitude',
     date:  '2025-10',
-    href:  'works/Orthographic Projection Centered at a Specific Latitude/',
-    thumb: 'works/Orthographic Projection Centered at a Specific Latitude/thumb.jpg',
-    tags:  ['地图投影']
+    href:  'works/2025-10/orthographic-projection/',
+    thumb: 'works/2025-10/orthographic-projection/thumb.jpg',
+    tags:  ['Map Projection']
   },
 
   {
     title: 'Map of Bioko Island',
     date:  '2025-09',
-    href:  'works/Map of Bioko Island/',
-    thumb: 'works/Map of Bioko Island/thumb.jpg',
-    tags:  ['普通地图']
+    href:  'works/2025-09/bioko-island/',
+    thumb: 'works/2025-09/bioko-island/thumb.jpg',
+    tags:  ['General Map']
   },
 
   {
     title: 'Plan Oblique Relief of South China Sea',
     date:  '2025-09',
-    href:  'works/Plan Oblique Relief of South China Sea/',
-    thumb: 'works/Plan Oblique Relief of South China Sea/thumb.jpg',
-    tags:  ['普通地图']
+    href:  'works/2025-09/south-china-sea-relief/',
+    thumb: 'works/2025-09/south-china-sea-relief/thumb.jpg',
+    tags:  ['General Map']
   },
 
   {
-    title: 'PLANISPHERE',
+    title: 'Planisphere',
     date:  '2025-09',
-    href:  'works/planisphere/',
-    thumb: 'works/planisphere/thumb.jpg',
-    tags:  ['普通地图']
+    href:  'works/2025-09/planisphere/',
+    thumb: 'works/2025-09/planisphere/thumb.jpg',
+    tags:  ['General Map']
   },
 
   {
-    title: '高中',
+    title: 'My High School and Surroundings',
     date:  '2025-04',
-    href:  'works/手绘高中/',
-    thumb: 'works/手绘高中/thumb.jpg',
-    tags:  ['专题地图']
+    href:  'works/2025-04/my-high-school/',
+    thumb: 'works/2025-04/my-high-school/thumb.jpg',
+    tags:  ['Thematic Map']
   },
 
   {
-    title: '小学&初中',
+    title: 'My Primary and Middle Schools and Their Surroundings',
     date:  '2025-04',
-    href:  'works/手绘小学初中/',
-    thumb: 'works/手绘小学初中/thumb.jpg',
-    tags:  ['专题地图']
+    href:  'works/2025-04/my-primary-middle-school/',
+    thumb: 'works/2025-04/my-primary-middle-school/thumb.jpg',
+    tags:  ['Thematic Map']
   },
 
   {
-    title: '1982 仙桃镇地图',
+    title: '1982 Xiantao Town Map',
     date:  '2025-04',
-    href:  'works/1982 仙桃镇地图/',
-    thumb: 'works/1982 仙桃镇地图/thumb.jpg',
-    tags:  ['普通地图']
+    href:  'works/2025-04/xiantao-1982/',
+    thumb: 'works/2025-04/xiantao-1982/thumb.jpg',
+    tags:  ['General Map']
   }
 
 ];

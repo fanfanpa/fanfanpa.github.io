@@ -10,7 +10,7 @@
     python tools/mkthumb.py <源图> [目标图]
 
 例子：
-    python tools/mkthumb.py "works/潜江城市公交路线图/潜江城市公交路线.png"
+    python tools/mkthumb.py "works/2026-09/qianjiang-bus-route/潜江城市公交路线.png"
     # 默认输出到同目录的 thumb.jpg
 
     python tools/mkthumb.py 原图.png works/某作品/thumb.jpg 900 600 90

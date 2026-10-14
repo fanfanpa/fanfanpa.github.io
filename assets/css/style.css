@@ -211,7 +211,12 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
   background: #fff;
   border-radius: 6px;
   overflow: hidden;
+  transition: opacity .18s;
 }
+
+/* 悬停时整张卡片变淡，作为「可以点」的视觉反馈。
+   卡片底色是白的、页面也是白的，所以看着只有图在变淡。 */
+.card:hover { opacity: .6; }
 
 /* contain：整张图缩进 300x200 的框里，不足的部分露出卡片的白色底。
    这样竖版作品不会被裁掉，横版作品也不会被拉伸变形。 */

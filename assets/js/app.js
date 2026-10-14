@@ -136,7 +136,7 @@
 
       var head = document.createElement('h2');
       head.className = 'year-head';
-      head.textContent = group.year === 0 ? '未标日期' : group.year;
+      head.textContent = group.year === 0 ? 'Undated' : group.year;
       block.appendChild(head);
 
       var grid = document.createElement('div');
@@ -165,9 +165,9 @@
 
     if (seen.length === 0) return;      // 一条标签都没有就不显示筛选栏
 
-    var active = '全部';
+    var active = 'All';
 
-    ['全部'].concat(seen).forEach(function (label) {
+    ['All'].concat(seen).forEach(function (label) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = label;
@@ -178,7 +178,7 @@
         Array.prototype.forEach.call(filtersEl.children, function (b) {
           b.setAttribute('aria-pressed', String(b.textContent === active));
         });
-        render(label === '全部'
+        render(label === 'All'
           ? WORKS
           : WORKS.filter(function (w) {
               return (w.tags || []).indexOf(label) !== -1;
@@ -196,7 +196,7 @@
   render(WORKS);
 
   if (WORKS.length === 0) {
-    emptyEl.textContent = '还没有作品。打开 data/works.js 添加第一条吧。';
+    emptyEl.textContent = 'No work yet. Open data/works.js to add the first one.';
     emptyEl.hidden = false;
   }
 
