@@ -35,6 +35,17 @@ try:
 except ImportError:
     sys.exit('需要 Pillow，请先运行：pip install Pillow')
 
+# 让输出对控制台编码不敏感。Windows 中文版的 stdout / stderr 是 GBK，
+# 打印 GBK 里没有的字符会抛 UnicodeEncodeError，脚本会崩在最后一行之前 ——
+# 该提示的提示了、该报的问题也报了，用户偏偏看不到「问题: N」这个结论。
+# 降级成 ? 只是难看，不会中断。stderr 也要：回溯信息里出现同样的字符，
+# 会在报错的过程中再报一次错。
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(errors='replace')
+    except Exception:
+        pass
+
 # 原图目录里除了这两个，剩下的那个就是原图
 SKIP_NAMES = ('index.html', 'thumb.jpg')
 
@@ -167,9 +178,10 @@ total_after = sum(r[3] for r in rows)
 print(f'  合计 {len(rows)} 张   {mb(total_before):.1f}MB → {mb(total_after):.1f}MB '
       f'（省 {mb(total_before - total_after):.1f}MB，{100 - total_after / total_before * 100:.0f}%）')
 
+# 用 ※ 不用 ⚠：GBK 里没有那个三角，中文控制台显示不出来
 second_gen = [r[0] for r in rows if r[6] and r[7] == 'ok']
 if second_gen:
-    print(f'\n  ⚠ 这些原本就是 JPEG，重压是二次压缩，损失会叠加：')
+    print(f'\n  ※ 这些原本就是 JPEG，重压是二次压缩，损失会叠加：')
     for s in second_gen:
         print(f'      {s}')
 
@@ -190,6 +202,7 @@ if apply:
              and f.suffix.lower() not in ('.jpg', '.jpeg')]
     for f in extra:
         print(f'  [!] 残留的非 jpg 原图：{f.relative_to(root)}')
-    print(f'  引用检查：{"全部有效 ✓" if not missing else str(missing) + " 处失效"}')
+    # √ 同上：GBK 里有它，✓ 没有
+    print(f'  引用检查：{"全部有效 √" if not missing else str(missing) + " 处失效"}')
 
 print(f'\n  {"已写入" if apply else "预览结束，未改动任何文件"}   问题: {problems}')
