@@ -35,7 +35,7 @@ window.WORKS = [
     thumb: 'works/2025-11/grid-world/thumb.jpg',
     tags:  ['General Map']
   },
-  
+
   {
     title: 'Power Plants of China',
     date:  '2025-11',
@@ -60,6 +60,14 @@ window.WORKS = [
     tags:  ['Thematic Map']
   },
 
+  {
+    title: 'China’s Crayfish Production, 2015–2024',
+    date:  '2025-11',
+    href:  'works/2025-11/crayfish-production-2015-2024/',
+    thumb: 'works/2025-11/crayfish-production-2015-2024/thumb.jpg',
+    tags:  ['Animation']
+  },
+  
   {
     title: 'China’s Crayfish Production and Exports, 2024',
     date:  '2025-11',

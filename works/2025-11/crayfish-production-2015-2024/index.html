@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>China’s Crayfish Production, 2015–2024</title>
+  <meta name="description" content="A looping animation of crayfish production in China, year by year from 2015 to 2024. Bars rank the provinces for each year while a line chart climbs from about 70 to 344.8 tonnes-ten-thousands, Hubei staying at the top throughout.">
+
+  <link rel="stylesheet" href="../../../assets/css/style.css">
+  <link rel="icon" href="data:,">
+
+  <!-- 图里的文字用的是系统字体（Plot 默认字族，Windows 上落到 Segoe UI /
+       微软雅黑），和正文字体一致，所以不用像 grid-world 那样再拉一个
+       webfont 下来。只留 preconnect，让模块脚本 import 库的时候省一次握手。 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <noscript>
+    <style>
+      /* 脚本被禁就画不出图：撤掉为图预留的高度、把下面那段文字说明
+         显示出来，页面不会留一块空白 */
+      .work-plot { aspect-ratio: auto; }
+      .work-plot__note { display: block; }
+    </style>
+  </noscript>
+
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+
+      <a class="brand" href="../../../index.html">X.B.</a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html#works">Visualizations</a>
+      </nav>
+
+      <ul class="social" aria-label="My accounts">
+        <li>
+          <a data-social="weibo" href="#" aria-label="Weibo" title="Weibo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM9.05 17.219c-.384.616-1.208.884-1.829.602-.612-.279-.793-.991-.406-1.593.379-.595 1.176-.861 1.793-.601.622.263.82.972.442 1.592zm1.27-1.627c-.141.237-.449.353-.689.253-.236-.09-.313-.361-.177-.586.138-.227.436-.346.672-.24.239.09.315.36.18.601l.014-.028zm.176-2.719c-1.893-.493-4.033.45-4.857 2.118-.836 1.704-.026 3.591 1.886 4.21 1.983.64 4.318-.341 5.132-2.179.8-1.793-.201-3.642-2.161-4.149zm7.563-1.224c-.346-.105-.57-.18-.405-.615.375-.977.42-1.804 0-2.404-.781-1.112-2.915-1.053-5.364-.03 0 0-.766.331-.571-.271.376-1.217.315-2.224-.27-2.809-1.338-1.337-4.869.045-7.888 3.08C1.309 10.87 0 13.273 0 15.348c0 3.981 5.099 6.395 10.086 6.395 6.536 0 10.888-3.801 10.888-6.82 0-1.822-1.547-2.854-2.915-3.284v.01zm1.908-5.092c-.766-.856-1.908-1.187-2.96-.962-.436.09-.706.511-.616.932.09.42.511.691.932.602.511-.105 1.067.044 1.442.465.376.421.466.977.316 1.473-.136.406.089.856.51.992.405.119.857-.105.992-.512.33-1.021.12-2.178-.646-3.035l.03.045zm2.418-2.195c-1.576-1.757-3.905-2.419-6.054-1.968-.496.104-.812.587-.706 1.081.104.496.586.813 1.082.707 1.532-.331 3.185.15 4.296 1.383 1.112 1.246 1.429 2.943.947 4.416-.165.48.106 1.007.586 1.157.479.165.991-.104 1.157-.586.675-2.088.241-4.478-1.338-6.235l.03.045z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="x" href="#" aria-label="X" title="X">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="github" href="#" aria-label="GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="observable" href="#" aria-label="Observable" title="Observable">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20c-1.065 0-1.988-.232-2.77-.696a4.7 4.7 0 0 1-1.794-1.89 9.97 9.97 0 0 1-.916-2.53A13.613 13.613 0 0 1 6.23 12c0-.766.05-1.499.152-2.2.1-.699.285-1.41.556-2.132A6.803 6.803 0 0 1 7.98 5.79a4.725 4.725 0 0 1 1.668-1.293C10.337 4.165 11.12 4 12 4c1.065 0 1.988.232 2.77.696a4.7 4.7 0 0 1 1.794 1.89c.418.795.723 1.639.916 2.53.192.891.29 1.853.29 2.884 0 .766-.05 1.499-.152 2.2a9.812 9.812 0 0 1-.567 2.132 7.226 7.226 0 0 1-1.042 1.878c-.418.53-.97.962-1.657 1.293-.688.332-1.471.497-2.352.497zm2.037-5.882c.551-.554.858-1.32.848-2.118 0-.824-.276-1.53-.827-2.118C13.506 9.294 12.82 9 12 9c-.82 0-1.506.294-2.058.882A2.987 2.987 0 0 0 9.115 12c0 .824.276 1.53.827 2.118.552.588 1.238.882 2.058.882.82 0 1.5-.294 2.037-.882zM12 24c6.372 0 11.538-5.373 11.538-12S18.372 0 12 0 .462 5.373.462 12 5.628 24 12 24Z"/></svg>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </header>
+
+  <main class="wrap work">
+
+    <a class="back" href="../../../index.html#works">← All work</a>
+
+    <h1>China’s Crayfish Production, 2015–2024</h1>
+
+    <!-- 这张图不是 <img>，而是下面那段模块脚本用 d3 + Observable Plot
+         现场画出来、并且一直在动的两棵 <svg>。
+
+         --plot-w / --plot-h 和脚本里的 WIDTH / HEIGHT 是同一组数字：浏览器
+         先按这个比例把高度占住，图晚一点画出来也不会让页面跳一下 —— 相当于
+         原来 <img> 上写 width/height 属性的作用。这里是 600×600 的正方形，
+         但整幅图会缩放到容器宽度，所以桌面段量出来是个大正方形。
+
+         数据不放单独的文件，直接内联在下面的脚本里（见那里的注释）。
+
+         图万一没画出来（CDN 连不上、断网、脚本报错），脚本自己会把
+         data-state 设成 failed，site.js 里还有个超时兜底；CSS 接到这个
+         状态就撤掉预留的高度、把下面这段文字显示出来。
+         它和这张图原来的 alt 大意相同。 -->
+    <div class="work-plot" id="plot" aria-busy="true"
+         style="--plot-w: 600; --plot-h: 600">
+      <p class="work-plot__note">A looping animation of crayfish production in China, running through the years 2015 to 2024 and then starting over. A horizontal bar chart ranks the provinces for the current year, led by Hubei with 143.7 by 2024; a smaller line chart laid over its lower right corner traces the national total climbing from about 70 to 344.8, with a red dashed line marking the year being shown.</p>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© <span id="year">2026</span> X.B.</p>
+    </div>
+  </footer>
+
+  <script src="../../../data/site.js"></script>
+  <script src="../../../assets/js/site.js"></script>
+
+  <!-- 绘图代码来自 Observable 笔记本，按 cell 顺序改写成一个普通模块。
+       改动只有下面注释里列的那几处，两张图的 spec 一字未动。 -->
+  <script type="module">
+    import { renderPlot } from '../../../assets/js/plot-work.js';
+
+    const WIDTH = 600;    // 和上面 --plot-w / --plot-h 是同一组数字
+    const HEIGHT = 600;
+
+    /* 笔记本里的 FileAttachment("中国各省市自治区小龙虾产量.csv")。
+       只有 1.4KB，直接内联在这里，页面就自成一体、不用再发一次 HTTP 请求。
+
+       和原文件逐字一致，只动了两处，都不影响 d3.csvParse 的结果：
+         · 去掉开头的 BOM（EF BB BF）。走文件时 fetch().text() 会按 Fetch
+           规范自动吃掉它，内联进来没有那一步 —— BOM 会粘到第一个列名上
+           变成 "﻿省"，d.省 取到 undefined，28 根条一根都画不出来。
+         · 行尾从 CRLF 换成 LF。d3-dsv 的解析器两种情况都认（源码里
+           \r 后面跟着 \n 就一起当换行吃掉），跟 CRLF 的结果完全一样。
+       空单元格照旧留空：d3.autoType 把空串转成 null，d3.sum / d3.max 会
+       跳过它 —— 补成 0 的话折线和总计就跟笔记本对不上了。 */
+    const CSV_TEXT = `省,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015
+湖北省,1437321,1242701,1138392,1073621,982010,925005,812435,631621,489177,433000
+安徽省,672037,639276,595239,495887,409247,349750,217546,137686,107144,97200
+湖南省,482246,461495,423591,378929,359491,306777,237591,135719,56304,17500
+江苏省,292217,280307,267161,263652,246165,204394,166777,115354,92984,90000
+江西省,234592,236948,213054,199028,189977,133492,110214,74387,58582,55437
+四川省,104175,83752,64681,57660,48868,34037,14813,,,
+山东省,63944,63197,60086,53936,51687,40006,32493,,,
+河南省,50702,54270,53338,53666,61130,58207,31661,,,
+浙江省,50352,44673,34630,27596,22264,18168,5814,,,
+广西壮族自治区,23028,20173,11122,6099,,3271,1095,,,
+重庆市,19898,18272,15176,10725,9218,8159,4835,,,
+云南省,3444,3205,2490,2714,,2110,1011,,,
+广东省,3317,2860,1974,1461,,204,117,,,
+福建省,2554,2691,2676,2657,,2322,1197,,,
+陕西省,2506,2387,1998,1865,,1325,,,,
+贵州省,1940,2609,2480,2247,,1793,660,,,
+新疆维吾尔自治区,991,1024,979,922,,8,5,,,
+黑龙江省,727,345,701,269,,72,46,,,
+辽宁省,620,,,,,,,,,
+海南省,344,336,327,170,,69,,,,
+山西省,329,286,307,224,,20,1,,,
+上海市,232,205,256,244,,391,322,,,
+吉林省,34,,,,,,,,,
+内蒙古自治区,15,,,,,,,,,
+河北省,8,7,5,17,,12,4,,,
+甘肃省,4,1,13,,,,,,,
+宁夏回族自治区,1,2,8,,,12,25,,,
+天津市,,,,6,,,,,,`;
+
+    const FIRST_YEAR = 2015;
+    const LAST_YEAR  = 2024;
+    const YEAR_MS    = 800;   // 笔记本里 Scrubber 的 delay: 800
+
+    renderPlot(document.getElementById('plot'), async ({ d3, Plot, container }) => {
+      /* ── 笔记本里几个独立的 cell ───────────────────────────────
+         cell 之间有依赖时 Observable 会自动重算，普通脚本没有这套，
+         所以按依赖顺序排成一段顺序代码；下面两张图改成接收 t 的函数，
+         不再去读外层的 t（笔记本里是隐式依赖）。 */
+
+      const data = d3.csvParse(CSV_TEXT, d3.autoType);
+
+      const yearColumns = Object.keys(data[0]).filter(key => key !== '省' && !isNaN(parseInt(key)));
+
+      const longData = data.flatMap(d => yearColumns.map(year => ({省: d.省, Year: parseInt(year), Production: d[year]})));
+
+      const maxProduction = d3.max(longData, d => d.Production);
+
+      const yearlyTotal = d3.rollups(
+        longData,
+        v => d3.sum(v, d => d.Production) / 10000, // 转换为万吨
+        d => d.Year
+      ).map(([year, total]) => ({Year: year, Total: total}))
+      .sort((a, b) => a.Year - b.Year); // 按年份排序
+
+      /* ── 两张图 ──────────────────────────────────────────────
+         spec 一字未动。唯一的改动是把读外层 t 的地方变成读入参，
+         以及删掉了笔记本里注释掉的 Plot.frame() / Plot.ruleX([0]) /
+         fontSize: 12 和那个没有下游的 d3.extent(...) 调试 cell。 */
+
+      function ProvinceProduction(t) {
+        return Plot.plot({
+          width: 600,
+          height: 600,
+          marginLeft: 110,
+          title: "中国各省市自治区小龙虾产量",
+          x: {
+            axis: "top",
+            domain: [0, maxProduction * 1.1],
+            label: "产量（万吨）", // 添加X轴标题并包含单位
+            tickFormat: d => (d / 10000).toFixed(1) // 将刻度值除以10000并保留1位小数
+          },
+          y: {
+            label: "省市自治区",
+            domain: Array.from(new Set(longData.map(d => d.省)))
+          },
+          ariaLabel: "中国各省市自治区小龙虾产量",
+          ariaDescription: "Horizontal bars ranking China's provinces by crayfish production for the year currently on screen.",
+          marks: [
+            Plot.barX(longData.filter(d => d.Year === t), {x: "Production", y: "省", fill: "steelblue", sort: { y: "data", reverse: true }}),
+            // 添加文本标签，显示万吨单位
+            Plot.text(longData.filter(d => d.Year === t), {
+              x: "Production",
+              y: "省",
+              text: d => (d.Production / 10000).toFixed(1),
+              textAnchor: "start",
+              dx: 5, // 向右偏移5像素
+              fill: "black"
+            })
+          ]
+        });
+      }
+
+      function TotalProduction(t) {
+        return Plot.plot({
+          width: 500,
+          height: 400,
+          title: "中国小龙虾年产量变化",
+          marginLeft: 40,
+          x: {
+            label: "年份",
+            domain: [2015, 2025],
+            ticks: 10,
+            tickFormat: d => d + ""
+          },
+          y: {
+            label: "总产量（万吨）",
+            axis: "right",
+            grid: true
+          },
+          ariaLabel: "中国小龙虾年产量变化",
+          ariaDescription: "National crayfish production by year, with the years up to the current one highlighted.",
+          marks: [
+            Plot.ruleY([60]),
+            // 绘制完整折线（浅色）
+            Plot.lineY(yearlyTotal, {
+              x: "Year",
+              y: "Total",
+              stroke: "lightgray",
+              strokeWidth: 1
+            }),
+            // 绘制到当前年份的折线（高亮）
+            Plot.lineY(yearlyTotal.filter(d => d.Year <= t), {
+              x: "Year",
+              y: "Total",
+              stroke: "steelblue",
+              strokeWidth: 3
+            }),
+            // 绘制到当前年份的数据点
+            Plot.dot(yearlyTotal.filter(d => d.Year <= t), {
+              x: "Year",
+              y: "Total",
+              fill: "steelblue",
+              r: 4
+            }),
+            // 当前年份的数据标签
+            Plot.text(yearlyTotal.filter(d => d.Year === t), {
+              x: "Year",
+              y: "Total",
+              text: d => d.Total.toFixed(1),
+              dx: -20,
+              dy: -10,
+              fill: "steelblue",
+              fontWeight: "bold"
+            }),
+            // 当前年份的垂直线
+            Plot.ruleX([t], {
+              stroke: "red",
+              strokeWidth: 1,
+              strokeDasharray: "3,3"
+            })
+          ]
+        });
+      }
+
+      /* ── DOM ─────────────────────────────────────────────────
+         笔记本最后那个 cell 的结构：一个 600×600 的框，条形图铺满它，
+         折线图绝对定位叠在右下角。原来写在 style 里的百分比搬到 CSS
+         的 .work-plot__bars / .work-plot__line 两条规则上。 */
+
+      const frame = document.createElement('div');
+      frame.className = 'work-plot__frame';
+
+      const bars = document.createElement('div');
+      bars.className = 'work-plot__bars';
+
+      const line = document.createElement('div');
+      line.className = 'work-plot__line';
+
+      frame.append(bars, line);
+
+      function paint(t) {
+        // 同一个任务里换掉两棵子树，中间不会渲染，所以看不见闪烁
+        bars.replaceChildren(ProvinceProduction(t));
+        line.replaceChildren(TotalProduction(t));
+      }
+
+      /* ── 缩放 ────────────────────────────────────────────────
+         两张图仍按笔记本里的 600 / 500 画，整块用 transform 等比放大到
+         容器宽度。重算 width 的话 marginLeft: 110 这类固定边距占的比例
+         会变，画面就和笔记本不一样了。 */
+      function fit() {
+        const scale = container.clientWidth / WIDTH;
+        if (scale > 0) frame.style.setProperty('--plot-scale', scale);
+      }
+      fit();
+      new ResizeObserver(fit).observe(container);
+
+      /* ── 播放 ────────────────────────────────────────────────
+         笔记本用 viewof Scrubber(autoplay / loop / delay: 800)，这里是
+         自己的定时器：到 2024 回到 2015，一直循环。 */
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+      let t = FIRST_YEAR;
+      let timer = null;
+      let onScreen = true;
+
+      function play() {
+        if (timer !== null || !onScreen || reduced.matches) return;
+        timer = setInterval(() => {
+          t = t >= LAST_YEAR ? FIRST_YEAR : t + 1;
+          paint(t);
+        }, YEAR_MS);
+      }
+
+      function pause() {
+        clearInterval(timer);
+        timer = null;
+      }
+
+      /* 滚出视口就停：这个页面每 800ms 重建两棵 Plot DOM 树，
+         看不见的时候没必要占着 CPU。 */
+      new IntersectionObserver((entries) => {
+        onScreen = entries[0].isIntersecting;
+        if (onScreen) play(); else pause();
+      }).observe(container);
+
+      /* 系统开了「减弱动态效果」就不播，静态停在最后一年；
+         中途改这个设置也跟着切。 */
+      reduced.addEventListener('change', () => {
+        if (reduced.matches) {
+          pause();
+          t = LAST_YEAR;
+          paint(t);
+        } else {
+          t = FIRST_YEAR;
+          paint(t);
+          play();
+        }
+      });
+
+      t = reduced.matches ? LAST_YEAR : FIRST_YEAR;
+      paint(t);
+      play();
+
+      return frame;
+    });
+  </script>
+
+</body>
+</html>

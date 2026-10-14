@@ -304,18 +304,88 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
    aspect-ratio 只吃无单位数字（<ratio> = <number> [ / <number> ]?），
    所以这里靠 var() 代换出 "1100 / 850"；写成 1100px / 850px 是无效值，
    整条声明会失效。 */
-.work-plot { aspect-ratio: var(--plot-w) / var(--plot-h); }
+.work-plot {
+  aspect-ratio: var(--plot-w) / var(--plot-h);
+  position: relative;   /* 给下面 .work-plot__frame 当定位参照 */
+}
 
 /* width:100% + height:auto 的效果和 .work img 完全一样：整体等比缩小。
    SVG 上带 viewBox，比例由它保证，所以宽度变了高度一定跟着走。
    display:block 不写的话 svg 是行内元素，底下会多出几像素基线空隙。
 
    Plot 自己会往 SVG 里插一条内部样式（含 max-width: 100%; height: auto），
-   这里显式再写一遍，是为了不依赖它的内部实现。 */
-.work-plot > svg {
+   这里显式再写一遍，是为了不依赖它的内部实现。
+
+   用的是后代选择器不是子选择器：图带 title / subtitle / caption 时 Plot 会
+   返回 <figure>，svg 就跑到 figure 里面去了，> svg 会匹配不到。 */
+.work-plot svg {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Plot 返回的 <figure>：它自己只设了 max-width（源码里那句注释写着
+   "avoid Observable default style"），没碰 margin，浏览器默认的
+   1em 40px 会把整幅图往右推 40px、上下各撑出 1em。 */
+.work-plot figure { margin: 0; }
+
+/* Plot 的标题是一个裸 <h2>：没有 class、没有行内样式，Plot 也不给它写任何
+   CSS 规则，长什么样全看页面自己怎么定义 —— 笔记本里就是 Observable 的
+   标题样式。下面这组值是从参考截图里量出来的（那张图是 600px 画布的
+   1.5033 倍）：
+
+     · 13 个汉字墨迹宽 386px，反推每个字 advance 30 图像像素 ≈ 20px，
+       不写 font-size 会落到浏览器默认的 1.5em = 24px，比原图大一圈
+     · 墨迹顶端落在画布顶下方 6px，和 line-height: normal 算出来的 5.7 对得上
+     · 但图的位置比 normal 又低 5px 左右，说明标题和 SVG 之间还有一段间距，
+       量出来是 5px = .25em
+
+   letter-spacing 也显式还原，站里 h1/h2/h3 那条规则带着 -.02em。 */
+.work-plot h2 {
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: normal;
+  margin: 0 0 .25em;
+}
+
+/* ── 固定画布尺寸 + 整体缩放的复合图 ──────────────────────────
+
+   还有一种代码绘制的作品（works/2025-11/crayfish-production-2015-2024）：
+   几张 Plot 各按自己的像素尺寸画好（600×600、500×400），再整块等比放大
+   到容器宽度。用 transform 而不是重算 width，是为了让任何宽度下的构图都
+   和原始笔记本逐像素同构 —— 重算的话 marginLeft: 110 这类固定边距占的
+   比例就变了。
+
+   缩放比例由页面脚本量出容器宽度后写进 --plot-scale。
+
+   frame 用绝对定位脱出文档流：它的宽度固定是 --plot-w 像素，容器比它窄
+   时（手机上）留在流里会把页面撑出横向滚动条。容器的高度仍然由上面那条
+   aspect-ratio 占住，因为这里 --plot-w 和 --plot-h 相等，两者正好对上。 */
+.work-plot__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--plot-w) * 1px);
+  height: calc(var(--plot-h) * 1px);
+  transform-origin: 0 0;
+  transform: scale(var(--plot-scale, 1));
+}
+
+/* 里面两个格子还是笔记本里写的百分比位置（0/0/100%/100% 和 44/39/60/60），
+   只是从行内 style 搬到了这里 */
+.work-plot__bars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.work-plot__line {
+  position: absolute;
+  top: 44%;
+  left: 39%;
+  width: 60%;
+  height: 60%;
 }
 
 /* 文字说明平时不显示：加载中和画好了都不该由它来撑高度，
