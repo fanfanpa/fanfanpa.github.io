@@ -1,6 +1,9 @@
 """
 把 works/ 下的原图统一压成 JPEG，替换原图，并同步改掉页面里的引用。
 
+只有 index.html 和 thumb.jpg、压根没有原图的目录（代码现场画图的作品页）
+会安静跳过，不计入问题数。
+
 每张图做四件事：
   1. 合成到白底（去掉透明通道），存成 JPEG
   2. 如果压完反而比原来大，就保留原图不动 —— 压缩不该让仓库变大
@@ -34,6 +37,11 @@ except ImportError:
 
 # 原图目录里除了这两个，剩下的那个就是原图
 SKIP_NAMES = ('index.html', 'thumb.jpg')
+
+# 认得出的图片后缀。目录里可能一个原图都没有（代码现场画图的作品页），
+# 也可能放了数据文件；这些都不能当原图 —— Image.open 拿到非图片会直接崩
+IMG_SUFFIXES = ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp',
+                '.tif', '.tiff', '.avif')
 
 
 def flatten(im):
@@ -77,7 +85,17 @@ problems = 0
 
 for page in sorted(root.glob('works/*/*/index.html')):
     work_dir = page.parent
-    assets = [f for f in work_dir.iterdir() if f.name not in SKIP_NAMES]
+    slug = work_dir.name
+    assets = [f for f in work_dir.iterdir()
+              if f.is_file()
+              and f.name not in SKIP_NAMES
+              and f.suffix.lower() in IMG_SUFFIXES]
+
+    if not assets:
+        # 目录里根本没有图片：这一页是代码现场画出图来的（或者图还没放），
+        # 不是错误，安静跳过
+        print(f'  --  {slug:<34} 没有原图，跳过')
+        continue
 
     if len(assets) != 1:
         print(f'  [!] {work_dir.relative_to(root)}: 有 {len(assets)} 个候选原图，跳过')
@@ -85,7 +103,6 @@ for page in sorted(root.glob('works/*/*/index.html')):
         continue
 
     src = assets[0]
-    slug = work_dir.name
     before = src.stat().st_size
     already_jpeg = src.suffix.lower() in ('.jpg', '.jpeg')
 
@@ -93,7 +110,13 @@ for page in sorted(root.glob('works/*/*/index.html')):
         print(f'  --  {slug:<34} 本来就是 jpg，按 --keep-jpeg 跳过')
         continue
 
-    im = flatten(Image.open(src))
+    try:
+        im = flatten(Image.open(src))
+    except Exception as e:              # 后缀像图片但内容不是，或者文件坏了
+        print(f'  [!] {slug:<34} 读不了 {src.name}：{e}')
+        problems += 1
+        continue
+
     orig_size = im.size
     if max_width and im.width > max_width:
         im = im.resize((max_width, round(im.height * max_width / im.width)), Image.LANCZOS)
@@ -160,8 +183,10 @@ if apply:
         if m and not (page.parent / m.group(1)).is_file():
             print(f'  [!] {page.relative_to(root)} 指向的 {m.group(1)} 不存在')
             missing += 1
+    # 只看图片后缀：作品目录里放数据文件（.csv/.js 之类）是正常的，不该报警
     extra = [f for f in root.glob('works/*/*/*')
              if f.is_file() and f.name not in SKIP_NAMES
+             and f.suffix.lower() in IMG_SUFFIXES
              and f.suffix.lower() not in ('.jpg', '.jpeg')]
     for f in extra:
         print(f'  [!] 残留的非 jpg 原图：{f.relative_to(root)}')

@@ -10,6 +10,23 @@
   <link rel="stylesheet" href="../../../assets/css/style.css">
   <link rel="icon" href="data:,">
 
+  <!-- 图里的标题、署名、图例都用 Oswald，浏览器里没有，得从 CDN 取。
+       fontsource 的 CSS 按 unicode-range 分片，这张图全是拉丁字母，
+       所以只会下到 latin 那一段（每个字重约 12KB）。
+       注意 Oswald 只有 200–700 字重，没有 800/900。 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/400.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/700.css">
+
+  <noscript>
+    <style>
+      /* 脚本被禁就画不出图：撤掉为图预留的高度、把下面那段文字说明
+         显示出来，页面不会留一块空白 */
+      .work-plot { aspect-ratio: auto; }
+      .work-plot__note { display: block; }
+    </style>
+  </noscript>
+
 </head>
 
 <body>
@@ -55,10 +72,21 @@
 
     <h1>World Grid Map</h1>
 
-    <!-- 直接引用原图。width/height 写的是原始像素尺寸，
-         浏览器能在图片加载完成前就留好位置，避免页面跳动。 -->
-    <img src="grid-world.jpg" width="2264" height="1764"
-         alt="A world map built from equal-sized squares, one per country, each labelled with its three-letter code and coloured by continent — pink for Asia, green for Europe, teal for Africa, purple for Antarctica, orange for the Americas and yellow for Oceania. The squares are arranged in a rough outline of the continents.">
+    <!-- 这张图不是 <img>，而是下面那段模块脚本用 d3 + Observable Plot
+         现场画出来的 <svg>。
+
+         --plot-w / --plot-h 和脚本里的 w / h 是同一组数字：浏览器先按
+         这个比例把高度占住，图晚一点画出来也不会让页面跳一下 —— 相当于
+         原来 <img> 上写 width/height 属性的作用。
+
+         图万一没画出来（CDN 连不上、断网、脚本报错），脚本自己会把
+         data-state 设成 failed，site.js 里还有个超时兜底；CSS 接到这个
+         状态就撤掉预留的高度、把下面这段文字显示出来。
+         它和这张图原来的 alt 一字不差。 -->
+    <div class="work-plot" id="plot" aria-busy="true"
+         style="--plot-w: 1100; --plot-h: 850">
+      <p class="work-plot__note">A world map built from equal-sized squares, one per country, each labelled with its three-letter code and coloured by continent — pink for Asia, green for Europe, teal for Africa, purple for Antarctica, orange for the Americas and yellow for Oceania. The squares are arranged in a rough outline of the continents.</p>
+    </div>
 
   </main>
 
@@ -70,6 +98,174 @@
 
   <script src="../../../data/site.js"></script>
   <script src="../../../assets/js/site.js"></script>
+
+  <!-- 绘图代码来自 Observable 笔记本，按 cell 顺序改写成一个普通模块。
+       改动只有三处（详见下面注释）：w/h 提到前面、取数加 await、
+       带副作用的函数改成纯函数。图本身的 spec 一字未动。 -->
+  <script type="module">
+    import { renderPlot } from '../../../assets/js/plot-work.js';
+
+    /* 笔记本里 w / h 是排在最后、和其他 cell 没有先后关系的两个 cell。
+       普通脚本必须先定义再使用，所以提到最上面。 */
+    const CSV_URL = 'https://gicentre.github.io/data/world/worldGridExtended.csv';
+    const w = 1100;
+    const h = 850;
+
+    /* 笔记本里的 subRegionOpacity(data) 会在函数体内给外层的 data 重新
+       赋值（副作用），data2 拿到的就是这份被改写过的数据。这里改成纯
+       函数：只看入参、返回新数组，谁调用谁接住结果。
+
+       分层规则原样保留：同一个 region 下，按 subRegion 在 CSV 里出现的
+       先后给 1 / .6 / .4 / .2 / .05，第 6 个及以后固定 .2。
+       顺序有讲究，不能改。 */
+    function withSubRegionOpacity(rows) {
+      const levels = [1, 0.6, 0.4, 0.2, 0.05];
+      const regionMap = new Map();
+
+      for (const d of rows) {
+        if (!regionMap.has(d.region)) regionMap.set(d.region, new Map());
+        const subMap = regionMap.get(d.region);
+        if (!subMap.has(d.subRegion)) {
+          subMap.set(d.subRegion, levels[subMap.size] ?? 0.2);
+        }
+      }
+
+      return rows.map((d) => ({
+        ...d,
+        subOpacity: regionMap.get(d.region).get(d.subRegion)
+      }));
+    }
+
+    renderPlot(document.getElementById('plot'), async ({ d3, Plot }) => {
+      /* 先把两个 Oswald 字重下下来再画，免得 SVG 里的文字先按备用字体
+         排一遍、字体到位后又跳一下。字体取不到时这个 Promise 也会正常
+         结束，不会卡住。 */
+      await Promise.all(
+        [400, 700].map((weight) => document.fonts.load(`${weight} 1em Oswald`))
+      );
+
+      const globalGrid = await d3.csv(CSV_URL, d3.autoType);
+
+      const data = withSubRegionOpacity(
+        globalGrid.filter((d) => d.name !== 'Hong Kong' && d.name !== 'Taiwan')
+      );
+
+      return Plot.plot({
+        /* 背景色和四边的内投影。Plot 自己的 SVG 样式（display:block /
+           height:auto / max-width:100%）写在它内部插的 <style> 里，
+           这里传 style 选项不会顶掉那些。 */
+        style: 'background:oklch(99% 0.01 98deg); box-shadow: inset 0 0 8em 8em oklch(40% 0.2 30deg /4%);',
+        width: w,
+        height: h,
+        inset: h / 100,
+        insetTop: h / 10,
+        axis: null,
+        color: { scheme: 'Dark2' },
+        opacity: { type: 'sqrt' },
+
+        /* 顶替原来 <img> 上那个 alt，给读屏软件用 */
+        ariaLabel: 'World Grid Map',
+        ariaDescription: 'A world map built from equal-sized squares, one per country, each labelled with its three-letter code and coloured by continent — pink for Asia, green for Europe, teal for Africa, purple for Antarctica, orange for the Americas and yellow for Oceania. The squares are arranged in a rough outline of the continents.',
+
+        marks: [
+          /* 白底方块，给下面那些带透明度的彩色方块垫底 */
+          Plot.cell(data, { x: 'gridCol', y: 'gridRow', fill: 'white' }),
+
+          /* 国家方块：颜色按 region，不透明度按 subOpacity */
+          Plot.cell(data, {
+            x: 'gridCol',
+            y: 'gridRow',
+            fill: 'region',
+            fillOpacity: 'subOpacity',
+            r: w / 400,
+            stroke: 'region',
+            strokeWidth: 2,
+            strokeOpacity: 'subOpacity'
+          }),
+
+          /* 每格里的三字母代码 */
+          Plot.text(data, {
+            x: 'gridCol',
+            y: 'gridRow',
+            text: (d) => d.a3,
+            fill: 'black',
+            stroke: 'white',
+            strokeOpacity: 0.5,
+            strokeWidth: 1,
+            fontSize: w / 120
+          }),
+
+          /* 大标题。Oswald 最粗只到 700，所以这个 900 实际会落到 700 ——
+             和笔记本里看到的效果一致，照写。 */
+          Plot.text(['World Grid Map'], {
+            x: 0,
+            y: 0,
+            dy: h / -25,
+            textAnchor: 'start',
+            lineAnchor: 'bottom',
+            fontFamily: 'Oswald',
+            fontSize: w / 15,
+            fontWeight: 900,
+            fill: 'oklch(25% 0.1 30deg)',
+            opacity: 0.9
+          }),
+
+          /* 署名，三行 */
+          Plot.text(['Data: giCentre\nTools: Observable\nCartographer: X.B.'], {
+            x: 0,
+            y: 19,
+            textAnchor: 'start',
+            lineAnchor: 'top',
+            fontFamily: 'Oswald',
+            lineHeight: 1.2,
+            fontSize: w / 90,
+            fill: 'oklch(25% 0.1 30deg)'
+          }),
+
+          /* 图例：六个色块 */
+          Plot.cell(
+            [
+              { x: 19, y: 0, region: 'Asia' },
+              { x: 21, y: 0, region: 'Europe' },
+              { x: 23, y: 0, region: 'Africa' },
+              { x: 25, y: 0, region: 'Antarctica' },
+              { x: 27, y: 0, region: 'Americas' },
+              { x: 29, y: 0, region: 'Oceania' }
+            ],
+            {
+              x: 'x',
+              y: 'y',
+              r: w / 400,
+              fill: 'region',
+              fillOpacity: 0.5,
+              stroke: 'region',
+              strokeWidth: 2,
+              strokeOpacity: 0.5
+            }
+          ),
+
+          /* 图例：六个名字 */
+          Plot.text(
+            [
+              { x: 19, txt: 'Asia' },
+              { x: 21, txt: 'Europe' },
+              { x: 23, txt: 'Africa' },
+              { x: 25, txt: 'Antarctica' },
+              { x: 27, txt: 'Americas' },
+              { x: 29, txt: 'Oceania' }
+            ],
+            {
+              x: 'x',
+              y: 1,
+              text: 'txt',
+              fill: 'oklch(25% 0.1 30deg)',
+              fontSize: w / 90
+            }
+          )
+        ]
+      });
+    });
+  </script>
 
 </body>
 </html>

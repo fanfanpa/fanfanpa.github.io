@@ -265,9 +265,11 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
 /* ============================================================
    7. 作品页
 
-   结构就三样：返回链接 + 标题 + 原图。
-   图片靠基础样式里的 img { max-width: 100% } 自适应容器宽度，
-   高度自动，所以横版竖版都不用单独处理。
+   结构就三样：返回链接 + 标题 + 图。图有两种：
+     · 图片型 —— 一个 <img>，靠基础样式里的 img { max-width: 100% }
+       自适应容器宽度，高度自动，横版竖版都不用单独处理
+     · 代码绘制型 —— 由页面里的模块脚本用 Observable Plot 现场画出的
+       <svg>，见下面 .work-plot 一节
    ============================================================ */
 
 .work { padding-block: 32px 72px; }
@@ -288,6 +290,42 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
 /* 大图按比例缩放。写 height: auto 是因为 <img> 上带了
    width/height 属性（用来预留位置防跳动），这里要让高度跟着宽度走。 */
 .work img { height: auto; }
+
+/* ── 代码现场绘制的作品页（Observable Plot 画出来的 <svg>）─────────
+
+   图片靠在 <img> 上写 width/height 属性，在下载完成之前就把位置占住
+   （见上面那条）。SVG 是脚本跑起来才存在的，换成等价做法：容器先用
+   --plot-w / --plot-h 按同样的比例把高度占住。
+
+   这两个变量写在页面 HTML 的行内 style 里，和图表代码里的 w / h 是
+   同一组数字，改的时候要一起改 —— 写行内 style 而不是写死在这条规则
+   里，就是为了让它们待在同一个文件里，不会两处失配。
+
+   aspect-ratio 只吃无单位数字（<ratio> = <number> [ / <number> ]?），
+   所以这里靠 var() 代换出 "1100 / 850"；写成 1100px / 850px 是无效值，
+   整条声明会失效。 */
+.work-plot { aspect-ratio: var(--plot-w) / var(--plot-h); }
+
+/* width:100% + height:auto 的效果和 .work img 完全一样：整体等比缩小。
+   SVG 上带 viewBox，比例由它保证，所以宽度变了高度一定跟着走。
+   display:block 不写的话 svg 是行内元素，底下会多出几像素基线空隙。
+
+   Plot 自己会往 SVG 里插一条内部样式（含 max-width: 100%; height: auto），
+   这里显式再写一遍，是为了不依赖它的内部实现。 */
+.work-plot > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 文字说明平时不显示：加载中和画好了都不该由它来撑高度，
+   否则会和上面预留的比例打架、反而造成跳动。 */
+.work-plot__note { display: none; }
+
+/* 画失败（CDN 连不上、取数失败、脚本报错，或者超时兜底触发）：
+   撤掉预留的高度，把那段文字说明显示出来，不留空白。 */
+.work-plot[data-state="failed"] { aspect-ratio: auto; }
+.work-plot[data-state="failed"] .work-plot__note { display: block; }
 
 
 /* ============================================================

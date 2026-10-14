@@ -28,4 +28,20 @@
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
 
+  // 代码现场绘制的作品页（.work-plot）如果迟迟没画出来 —— CDN 连不上、
+  // 模块文件 404、请求一直挂着 —— 到点就按「画失败」处理，让 CSS 把
+  // 容器里那段文字说明露出来，而不是永远留着那块为图预留的空白。
+  //
+  // plot-work.js 里的 try/catch 只能接住「模块已经开始跑之后」的错误，
+  // 模块本身没加载起来的情况只有这里兜得住。正常一两秒就画完了，
+  // 15 秒是给慢网络留的余量；真画出来了 renderPlot 会把状态改回 ready，
+  // 所以只是一闪而过，不会把画好的图按掉。
+  var plot = document.querySelector('.work-plot[aria-busy]');
+  if (plot) {
+    setTimeout(function () {
+      if (!plot.dataset.state) plot.dataset.state = 'failed';
+      plot.removeAttribute('aria-busy');
+    }, 15000);
+  }
+
 })();
