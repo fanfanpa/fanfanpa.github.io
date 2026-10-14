@@ -29,6 +29,62 @@ window.WORKS = [
   },
 
   {
+    title: 'World Grid Map',
+    date:  '2025-11',
+    href:  'works/2025-11/grid-world/',
+    thumb: 'works/2025-11/grid-world/thumb.jpg',
+    tags:  ['General Map']
+  },
+  
+  {
+    title: 'Power Plants of China',
+    date:  '2025-11',
+    href:  'works/2025-11/china-power-plants/',
+    thumb: 'works/2025-11/china-power-plants/thumb.jpg',
+    tags:  ['Thematic Map']
+  },
+
+  {
+    title: 'Electric Scooter Accessibility in Beijing',
+    date:  '2025-11',
+    href:  'works/2025-11/accessibility/',
+    thumb: 'works/2025-11/accessibility/thumb.jpg',
+    tags:  ['Thematic Map']
+  },
+
+  {
+    title: 'Aosen South Park Running Trail',
+    date:  '2025-11',
+    href:  'works/2025-11/running-route/',
+    thumb: 'works/2025-11/running-route/thumb.jpg',
+    tags:  ['Thematic Map']
+  },
+
+  {
+    title: 'China’s Crayfish Production and Exports, 2024',
+    date:  '2025-11',
+    href:  'works/2025-11/crayfish-production-exports-2024/',
+    thumb: 'works/2025-11/crayfish-production-exports-2024/thumb.jpg',
+    tags:  ['Thematic Map']
+  },
+
+  {
+    title: 'Hubei’s Crayfish Exports, 2024',
+    date:  '2025-11',
+    href:  'works/2025-11/hubei-crayfish-exports-2024/',
+    thumb: 'works/2025-11/hubei-crayfish-exports-2024/thumb.jpg',
+    tags:  ['Thematic Map']
+  },
+
+  {
+    title: 'CMYK Dots for Relief Representation',
+    date:  '2025-11',
+    href:  'works/2025-11/cmyk-dots-relief-representation/',
+    thumb: 'works/2025-11/cmyk-dots-relief-representation/thumb.jpg',
+    tags:  ['General Map']
+  },
+
+  {
     title: 'Orthographic Projection Centered at a Specific Latitude',
     date:  '2025-10',
     href:  'works/2025-10/orthographic-projection/',
