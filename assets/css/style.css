@@ -397,6 +397,87 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
 .work-plot[data-state="failed"] { aspect-ratio: auto; }
 .work-plot[data-state="failed"] .work-plot__note { display: block; }
 
+/* ── 播放控制条（assets/js/scrubber.js）─────────────────────
+
+   动画作品页通用的进度条 + 播放/暂停。放在 .work-plot 外面：那个容器的
+   高度被上面的 aspect-ratio 钉死，里面的 frame 还是绝对定位的，控件塞
+   进去一定和图重叠；而且 plot-work 会 replaceChildren 把容器整个清空。
+
+   类名不带 work- 前缀 —— 模块不假设自己长在作品页里，以后别处要用直接搬。
+
+   控件的 DOM 是脚本建的（HTML 里只有个空盒子），「插进去前后高度一致」
+   得靠这里保证：min-height 负责空盒子占位，但光有它不够 —— 字体放大时
+   里面的文字可能超过 44px，控件插进来照样顶高一行。所以三个子元素都写
+   死 height: 32px，内容高度的上界就是 32px，怎么算都不到 44。 */
+.scrubber {
+  display: flex;
+  flex-wrap: nowrap;     /* 换行会改行高，上面那个占位就不成立了 */
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin-top: 16px;
+
+  /* 必须浮在画布上面，否则点不动。
+
+     上面的画布会往下溢出一截：--plot-h 只按 <svg> 的比例预留，没算 Plot
+     的标题（crayfish 那页的 figure 因此比容器高 55px），里面 .work-plot__line
+     又是 top 44% / height 60%，自己还再溢出 4%。这些盒子都是透明的，墨迹
+     并没有画到容器外面（实测只多出 3px，落在 margin-top 的 16px 里），但
+     **透明盒子照样吃 pointer 事件** —— 不给 z-index 的话，控件顶上那 25px
+     点下去命中的是画布，滑块拖不动、按钮按不下。
+
+     不能用 .work-plot { overflow: hidden } 解决：那里有真墨迹，会裁掉。 */
+  position: relative;
+  z-index: 1;
+}
+
+.scrubber button {
+  flex: none;
+  width: 5.5em;          /* 文字在 Play / Pause 之间换，不定宽滑块会跟着挪 */
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: .82rem;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.scrubber button:hover { color: var(--fg); border-color: var(--fg-muted); }
+
+/* accent-color 让滑过的那一段呈主题蓝。不写 ::-webkit-slider-thumb /
+   ::-moz-range-thumb 那套厂商选择器 —— 各家滑块的默认外观已经配得上站里
+   其他控件，自己描一遍反而要跟着浏览器更新追。 */
+.scrubber input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;          /* 不写的话 range 的固有宽度会在窄屏把整行顶破 */
+  height: 32px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* 等宽数字不是为了好看：「Year: 2015」到「Year: 2024」每个字形都不一样，
+   不等宽的话读数会随年份左右抖，前面刚定宽的按钮也白定了。 */
+.scrubber span {
+  flex: none;
+  height: 32px;
+  line-height: 32px;
+  font-size: .82rem;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 图画不出来时整条控件也收掉 —— 控件是脚本建的，就算 build() 中途抛错
+   它也可能已经插进去了（scrubber.js 是先建控件、再调 onchange 画图的），
+   留着就是一条点了没用的死控件。
+
+   用 ~ 不用 +：+ 要求紧邻，将来中间插一条 .work-plot 的规则就会静默失效，
+   失败页面上又会冒出那条死控件。 */
+.work-plot[data-state="failed"] ~ .scrubber { display: none; }
+
 
 /* ============================================================
    8. 窄屏

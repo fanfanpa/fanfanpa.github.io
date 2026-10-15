@@ -18,9 +18,11 @@
   <noscript>
     <style>
       /* 脚本被禁就画不出图：撤掉为图预留的高度、把下面那段文字说明
-         显示出来，页面不会留一块空白 */
+         显示出来，页面不会留一块空白。控制条也是一样，模块脚本不跑
+         它就是个空盒子，留着白白占一条高度。 */
       .work-plot { aspect-ratio: auto; }
       .work-plot__note { display: block; }
+      .scrubber { display: none; }
     </style>
   </noscript>
 
@@ -88,6 +90,11 @@
       <p class="work-plot__note">A looping animation of crayfish production in China, running through the years 2015 to 2024 and then starting over. A horizontal bar chart ranks the provinces for the current year, led by Hubei with 143.7 by 2024; a smaller line chart laid over its lower right corner traces the national total climbing from about 70 to 344.8, with a red dashed line marking the year being shown.</p>
     </div>
 
+    <!-- 播放控制条。class 写在这儿而不是等模块脚本加上：控件是脚本建的，
+         类名晚一步出现的话加载期间就没有预留高度，控件冒出来时页脚会跳。
+         模块脚本跑起来之前它是个空盒子，高度由 CSS 的 min-height 占住。 -->
+    <div class="scrubber" id="scrubber"></div>
+
   </main>
 
   <footer class="site-footer">
@@ -103,6 +110,7 @@
        改动只有下面注释里列的那几处，两张图的 spec 一字未动。 -->
   <script type="module">
     import { renderPlot } from '../../../assets/js/plot-work.js';
+    import { createScrubber } from '../../../assets/js/scrubber.js';
 
     const WIDTH = 600;    // 和上面 --plot-w / --plot-h 是同一组数字
     const HEIGHT = 600;
@@ -307,51 +315,33 @@
       new ResizeObserver(fit).observe(container);
 
       /* ── 播放 ────────────────────────────────────────────────
-         笔记本用 viewof Scrubber(autoplay / loop / delay: 800)，这里是
-         自己的定时器：到 2024 回到 2015，一直循环。 */
-      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+         笔记本里是 viewof Scrubber(d3.ticks(2015, 2024, 10), {
+         autoplay, loop, delay: 800, initial: 0 })。那个笔记本 import
+         不进来，assets/js/scrubber.js 是照着它重写的公共模块，收的也
+         是 values 数组 —— 这里的 d3.range 和笔记本的 d3.ticks 是同一
+         组年份。
 
-      let t = FIRST_YEAR;
-      let timer = null;
-      let onScreen = true;
+         滚出视口暂停、尊重「减弱动态效果」，这两条都在模块里，不用
+         在这儿再写一遍。
 
-      function play() {
-        if (timer !== null || !onScreen || reduced.matches) return;
-        timer = setInterval(() => {
-          t = t >= LAST_YEAR ? FIRST_YEAR : t + 1;
-          paint(t);
-        }, YEAR_MS);
-      }
+         ⚠ 这个调用必须留在 build() 里、而且 build 必须保持同步（体内
+         不能出现 await）。这样 await build(...) 的续体是同一个任务里
+         的微任务，replaceChildren(node) 和这里的插控件发生在同一次
+         渲染机会内，中间不可能出现「控件在、图不在」的一帧。将来谁在
+         build 里加了 await（比如把 CSV 改成 fetch 回来），这个前提就
+         没了。
 
-      function pause() {
-        clearInterval(timer);
-        timer = null;
-      }
-
-      /* 滚出视口就停：这个页面每 800ms 重建两棵 Plot DOM 树，
-         看不见的时候没必要占着 CPU。 */
-      new IntersectionObserver((entries) => {
-        onScreen = entries[0].isIntersecting;
-        if (onScreen) play(); else pause();
-      }).observe(container);
-
-      /* 系统开了「减弱动态效果」就不播，静态停在最后一年；
-         中途改这个设置也跟着切。 */
-      reduced.addEventListener('change', () => {
-        if (reduced.matches) {
-          pause();
-          t = LAST_YEAR;
-          paint(t);
-        } else {
-          t = FIRST_YEAR;
-          paint(t);
-          play();
-        }
+         注意画失败的情况：控件是在第一次 onchange 之前就插好的，图抛
+         错的时候它已经在 DOM 里了。收掉它的是 CSS 里
+         .work-plot[data-state="failed"] ~ .scrubber 那条。 */
+      createScrubber(document.getElementById('scrubber'), {
+        values: d3.range(FIRST_YEAR, LAST_YEAR + 1),
+        format: year => `Year: ${year}`,
+        label: 'Year',
+        delay: YEAR_MS,
+        observe: container,
+        onchange: paint,
       });
-
-      t = reduced.matches ? LAST_YEAR : FIRST_YEAR;
-      paint(t);
-      play();
 
       return frame;
     });
