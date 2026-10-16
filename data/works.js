@@ -21,6 +21,14 @@
 window.WORKS = [
 
   {
+    title: 'Covering a Square with Three Discs: A Gradient Descent Animation',
+    date:  '2026-06',
+    href:  'works/2026-06/covering-square/',
+    thumb: 'works/2026-06/covering-square/thumb.jpg',
+    tags:  ['Animation']
+  },
+
+  {
     title: 'Qianjiang City Bus Route Map',
     date:  '2026-09',
     href:  'works/2026-09/qianjiang-bus-route/',

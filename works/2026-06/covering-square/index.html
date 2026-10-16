@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Covering a Square with Three Discs: A Gradient Descent Animation</title>
+  <meta name="description" content="An animation of three translucent discs sliding into place over a square, driven by a gradient descent on a soft-coverage objective. Discs start from a random position on every load and settle at about 99% hard coverage.">
+
+  <link rel="stylesheet" href="../../../assets/css/style.css">
+  <link rel="icon" href="data:,">
+
+  <!-- 图里的文字用的是系统字体（system-ui，和正文字体同一族），不用拉
+       webfont 下来。只留 preconnect，让模块脚本 import d3 的时候省一次
+       握手。 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <noscript>
+    <style>
+      /* 脚本被禁就画不出图：撤掉为图预留的高度、把下面那段文字说明
+         显示出来，页面不会留一块空白。控件行也一样 —— Replay 按钮是
+         脚本建的，控制条只剩个空盒子，留着白白占一条高度。 */
+      .work-plot { aspect-ratio: auto; }
+      .work-plot__note { display: block; }
+      .scrubber { display: none; }
+    </style>
+  </noscript>
+
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+
+      <a class="brand" href="../../../index.html">X.B.</a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html#works">Visualizations</a>
+      </nav>
+
+      <ul class="social" aria-label="My accounts">
+        <li>
+          <a data-social="weibo" href="#" aria-label="Weibo" title="Weibo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM9.05 17.219c-.384.616-1.208.884-1.829.602-.612-.279-.793-.991-.406-1.593.379-.595 1.176-.861 1.793-.601.622.263.82.972.442 1.592zm1.27-1.627c-.141.237-.449.353-.689.253-.236-.09-.313-.361-.177-.586.138-.227.436-.346.672-.24.239.09.315.36.18.601l.014-.028zm.176-2.719c-1.893-.493-4.033.45-4.857 2.118-.836 1.704-.026 3.591 1.886 4.21 1.983.64 4.318-.341 5.132-2.179.8-1.793-.201-3.642-2.161-4.149zm7.563-1.224c-.346-.105-.57-.18-.405-.615.375-.977.42-1.804 0-2.404-.781-1.112-2.915-1.053-5.364-.03 0 0-.766.331-.571-.271.376-1.217.315-2.224-.27-2.809-1.338-1.337-4.869.045-7.888 3.08C1.309 10.87 0 13.273 0 15.348c0 3.981 5.099 6.395 10.086 6.395 6.536 0 10.888-3.801 10.888-6.82 0-1.822-1.547-2.854-2.915-3.284v.01zm1.908-5.092c-.766-.856-1.908-1.187-2.96-.962-.436.09-.706.511-.616.932.09.42.511.691.932.602.511-.105 1.067.044 1.442.465.376.421.466.977.316 1.473-.136.406.089.856.51.992.405.119.857-.105.992-.512.33-1.021.12-2.178-.646-3.035l.03.045zm2.418-2.195c-1.576-1.757-3.905-2.419-6.054-1.968-.496.104-.812.587-.706 1.081.104.496.586.813 1.082.707 1.532-.331 3.185.15 4.296 1.383 1.112 1.246 1.429 2.943.947 4.416-.165.48.106 1.007.586 1.157.479.165.991-.104 1.157-.586.675-2.088.241-4.478-1.338-6.235l.03.045z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="x" href="#" aria-label="X" title="X">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="github" href="#" aria-label="GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="observable" href="#" aria-label="Observable" title="Observable">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20c-1.065 0-1.988-.232-2.77-.696a4.7 4.7 0 0 1-1.794-1.89 9.97 9.97 0 0 1-.916-2.53A13.613 13.613 0 0 1 6.23 12c0-.766.05-1.499.152-2.2.1-.699.285-1.41.556-2.132A6.803 6.803 0 0 1 7.98 5.79a4.725 4.725 0 0 1 1.668-1.293C10.337 4.165 11.12 4 12 4c1.065 0 1.988.232 2.77.696a4.7 4.7 0 0 1 1.794 1.89c.418.795.723 1.639.916 2.53.192.891.29 1.853.29 2.884 0 .766-.05 1.499-.152 2.2a9.812 9.812 0 0 1-.567 2.132 7.226 7.226 0 0 1-1.042 1.878c-.418.53-.97.962-1.657 1.293-.688.332-1.471.497-2.352.497zm2.037-5.882c.551-.554.858-1.32.848-2.118 0-.824-.276-1.53-.827-2.118C13.506 9.294 12.82 9 12 9c-.82 0-1.506.294-2.058.882A2.987 2.987 0 0 0 9.115 12c0 .824.276 1.53.827 2.118.552.588 1.238.882 2.058.882.82 0 1.5-.294 2.037-.882zM12 24c6.372 0 11.538-5.373 11.538-12S18.372 0 12 0 .462 5.373.462 12 5.628 24 12 24Z"/></svg>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </header>
+
+  <!-- work--fit：把图和控件一起收窄，好让「滚过标题之后」这一屏正好被图
+       和控件占满。这页的画布也是正方形（600×600），满宽的话光图就有
+       1032px 高，比一屏还高。规则和那个 72px 常数的来历见 style.css
+       第 7 节末尾。 -->
+  <main class="wrap work work--fit">
+
+    <a class="back" href="../../../index.html#works">← All work</a>
+
+    <h1>Covering a Square with Three Discs: A Gradient Descent Animation</h1>
+
+    <!-- 这张图不是 <img>，而是下面那段模块脚本用 d3 现场画出来的 <svg>，
+         并且一直在动：每帧跑一次梯度下降的迭代。
+
+         --plot-w / --plot-h 和脚本里的 WIDTH / HEIGHT 是同一组数字：浏览器
+         先按这个比例把高度占住，图晚一点画出来也不会让页面跳一下 —— 相当于
+         原来 <img> 上写 width/height 属性的作用。
+
+         SVG 只给了 viewBox、没给 width / height，靠 CSS 里那条
+         .work-plot svg { width: 100%; height: auto } 等比缩放到容器宽度，
+         所以不用像小龙虾那页再套一层 transform 缩放壳。
+
+         ⚠ 笔记本里 width 是 Observable 的反应式变量（跟着 cell 宽度走），
+         这里必须是常数。定 600 是因为 plotSize = min(宽-80, 高-80) 到 600
+         就饱和了，再宽只是右边多出一段空白。
+
+         图万一没画出来（CDN 连不上、断网、脚本报错），脚本自己会把
+         data-state 设成 failed，site.js 里还有个超时兜底；CSS 接到这个
+         状态就撤掉预留的高度、把下面这段文字显示出来。
+         它和这张图原来的 alt 大意相同。 -->
+    <div class="work-plot" id="plot" aria-busy="true"
+         style="--plot-w: 600; --plot-h: 600">
+      <p class="work-plot__note">Three translucent discs — orange, blue and purple — sliding into place over a square, driven by a gradient descent on a soft-coverage objective. Faint trails follow each disc’s centre, and a line of text above the plot reports the iteration, the soft coverage, the hard coverage and the best hard coverage found so far. The discs start from a random position on every load and settle at about 99% hard coverage.</p>
+    </div>
+
+    <!-- 控件行。这页照搬笔记本，只有一个 Replay 按钮、没有进度条，但复用了
+         .scrubber 那一套：胶囊按钮、min-height 占位、图失败时跟着隐藏、
+         work--fit 下和图一起收窄。按钮是脚本建的，所以这里是个空盒子。 -->
+    <div class="scrubber" id="controls" role="group" aria-label="Animation controls"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© <span id="year">2026</span> X.B.</p>
+    </div>
+  </footer>
+
+  <script src="../../../data/site.js"></script>
+  <script src="../../../assets/js/site.js"></script>
+
+  <!-- 绘图代码来自 Observable 笔记本，按 cell 顺序改写成一个普通模块。
+       和笔记本的差异只有这几处：
+
+         · width 是 Observable 的反应式变量，这里钉成常数 600
+         · chart cell 里那个 for…of 的循环体搬成 paint()，由 rAF 逐帧调用
+         · arrow 从 '@oberbichler/arrow' 抄成模块内的函数（那不是 npm 包，
+           是笔记本之间的导入名）
+         · 读数那行加了 lang="zh-CN"
+         · 多了「减弱动态效果」那一条分支，站里的约定，见下面
+
+       生成器 discCoverageOptimization 和画图的每一步都一字未动。
+
+       这类页面必须过 HTTP 服务器才能看：type="module" 和跨域 import 在
+       file:// 下会被 CORS 拒掉。 -->
+  <script type="module">
+    import { renderD3 } from '../../../assets/js/plot-work.js';
+
+    const WIDTH = 600;    // 和上面 --plot-w / --plot-h 是同一组数字
+    const HEIGHT = 600;
+
+    /* ── arrow ───────────────────────────────────────────────────
+       笔记本里是 import {arrow} from '@oberbichler/arrow'。那是
+       Observable 笔记本之间的导入名，npm 上没有这个包，所以照抄进来。
+
+       画的是一条折线：把 a→b 的箭头写成 6 个点 —— 尖端 b、脖子 m、
+       两片翅膀 l / r，再回到 m 收口。它改的是传进来那个 selection 的
+       points 属性，所以调用写法是 selection.call(arrow, ax, ay, bx, by)
+
+                b
+               / \
+              l-m-r
+              |      ^
+              |    u |
+              a      0 --> n
+
+       选项只有 arrowLength / arrowWidth，默认 8 / 4；笔记本调用时
+       给的是 10 / 8。 */
+    function arrow(selection, ax, ay, bx, by, options = {}) {
+      const dx = bx - ax
+      const dy = by - ay
+      const length = Math.sqrt(dx ** 2 + dy ** 2)
+      const ux = dx / length
+      const uy = dy / length
+      const nx = -uy
+      const ny = ux
+      const h = options.arrowLength || 8
+      const w = options.arrowWidth || 4
+      const mx = bx - ux * h
+      const my = by - uy * h
+      const lx = mx - nx * w / 2
+      const ly = my - ny * w / 2
+      const rx = mx + nx * w / 2
+      const ry = my + ny * w / 2
+
+      selection.attr('points', `${ax},${ay} ${mx},${my} ${lx},${ly} ${bx},${by} ${rx},${ry} ${mx},${my}`)
+        .attr('stroke-linejoin', 'round')
+      return selection
+    }
+
+    /* ── 优化器 ──────────────────────────────────────────────────
+       笔记本里的独立 cell，一字未动。
+
+       三个半径 r = 2/3 的圆盘去盖单位正方形的内接正方形（边长 s = √2）。
+       「软覆盖」是每个样本点被任一圆盘盖住的概率 —— 圆盘边界用
+       logistic 平滑掉（TAU = 0.002），这样目标函数可微；「硬覆盖」才是
+       真数点。梯度用有限差分（EPS = 1e-4）算，每次要调 7 遍 softCov
+       （1 遍基准 + 6 个参数各扰动一次），优化器是 Adam。
+
+       圆心从随机位置出发，跑 250 次迭代，每步 yield 一帧给外面画。 */
+    function* discCoverageOptimization() {
+
+      const s = Math.sqrt(2);
+      const r = 2 / 3;
+      const MAX_ITER = 250;
+      const BOUND_MIN = -r, BOUND_MAX = s + r;
+
+      const GRID = 100;
+      const samples = [];
+      for (let i = 0; i < GRID; i++) {
+        for (let j = 0; j < GRID; j++) {
+          samples.push([(i + 0.5) / GRID * s, (j + 0.5) / GRID * s]);
+        }
+      }
+
+      const TAU = 0.002;
+
+      function softCov(params) {
+        let sum = 0;
+        for (const [px, py] of samples) {
+          let notCov = 1;
+          for (let k = 0; k < 3; k++) {
+            const d2 = (px - params[k * 2]) ** 2 + (py - params[k * 2 + 1]) ** 2;
+            notCov *= (1 - 1 / (1 + Math.exp((d2 - r * r) / TAU)));
+          }
+          sum += (1 - notCov);
+        }
+        return sum / samples.length;
+      }
+
+      function hardCov(params) {
+        let cnt = 0;
+        for (const [px, py] of samples) {
+          for (let k = 0; k < 3; k++) {
+            if ((px - params[k * 2]) ** 2 + (py - params[k * 2 + 1]) ** 2 <= r * r) {
+              cnt++;
+              break;
+            }
+          }
+        }
+        return cnt / samples.length;
+      }
+
+      const EPS = 1e-4;
+
+      function gradient(params) {
+        const base = softCov(params);
+        const g = new Float64Array(6);
+        for (let i = 0; i < 6; i++) {
+          params[i] += EPS;
+          g[i] = (softCov(params) - base) / EPS;
+          params[i] -= EPS;
+        }
+        return g;
+      }
+
+      function clamp(v) {
+        return Math.min(BOUND_MAX, Math.max(BOUND_MIN, v));
+      }
+
+      // 随机初始圆心（每次刷新都不一样）
+      let params = new Float64Array(6);
+      for (let k = 0; k < 3; k++) {
+        params[k * 2] = Math.random() * s;
+        params[k * 2 + 1] = Math.random() * s;
+      }
+
+      // Adam 优化器状态
+      let m = new Float64Array(6);
+      let v2 = new Float64Array(6);
+      let adamT = 0;
+      const B1 = 0.9, B2 = 0.999, ADAM_EPS = 1e-8, LR = 0.01;
+
+      let curSoft = softCov(params);
+      let curHard = hardCov(params);
+      let best = { params: params.slice(), hard: curHard, iter: 0 };
+
+      // 轨迹记录
+      const trails = [[], [], []];
+      function pushTrail(p) {
+        for (let k = 0; k < 3; k++) trails[k].push([p[k * 2], p[k * 2 + 1]]);
+      }
+      pushTrail(params);
+
+      // 输出初始状态
+      yield {
+        params: params.slice(),
+        soft: curSoft,
+        hard: curHard,
+        bestHard: best.hard,
+        trails: trails.map(t => [...t]),
+        iter: 0
+      };
+
+      // 主优化循环
+      for (let iter = 1; iter <= MAX_ITER; iter++) {
+        adamT++;
+        const grad = gradient(params);
+
+        for (let i = 0; i < 6; i++) {
+          m[i] = B1 * m[i] + (1 - B1) * grad[i];
+          v2[i] = B2 * v2[i] + (1 - B2) * grad[i] ** 2;
+          const mh = m[i] / (1 - B1 ** adamT);
+          const vh = v2[i] / (1 - B2 ** adamT);
+          params[i] = clamp(params[i] + LR * mh / (Math.sqrt(vh) + ADAM_EPS));
+        }
+
+        curSoft = softCov(params);
+        curHard = hardCov(params);
+
+        if (curHard > best.hard) {
+          best = { params: params.slice(), hard: curHard, iter };
+        }
+
+        pushTrail(params);
+
+        yield {
+          params: params.slice(),
+          soft: curSoft,
+          hard: curHard,
+          bestHard: best.hard,
+          trails: trails.map(t => [...t]),
+          iter
+        };
+      }
+    };
+
+    renderD3(document.getElementById('plot'), ({ d3 }) => {
+
+      /* ── 画布 ──────────────────────────────────────────────── */
+      const margin = { top: 30, right: 30, bottom: 40, left: 50 };
+      const plotSize = Math.min(
+        WIDTH - margin.left - margin.right,
+        HEIGHT - margin.top - margin.bottom
+      );
+
+      // 数学坐标范围
+      const s = Math.sqrt(2);
+      const r = 2 / 3;
+      const VIEW_MARGIN = r + 0.08;
+      const xDomain = [-VIEW_MARGIN, s + VIEW_MARGIN];
+      const yDomain = [-VIEW_MARGIN, s + VIEW_MARGIN];
+
+      // 比例尺（SVG 坐标系 y 轴向下，所以 yScale 反置）
+      const xScale = d3.scaleLinear()
+        .domain(xDomain)
+        .range([margin.left, margin.left + plotSize]);
+      const yScale = d3.scaleLinear()
+        .domain(yDomain)
+        .range([margin.top + plotSize, margin.top]);
+
+      // 创建 SVG 元素。只给 viewBox：宽度由 CSS 拉满容器，高度按比例走
+      const svg = d3.create("svg")
+        .attr("viewBox", [0, 0, WIDTH, HEIGHT]);
+
+      // 背景：半透明正方形区域
+      svg.append("rect")
+        .attr("x", xScale(0))
+        .attr("y", yScale(s))
+        .attr("width", xScale(s) - xScale(0))
+        .attr("height", yScale(0) - yScale(s))
+        .attr("fill", "rgba(184,64,48,0.08)")
+        .attr("stroke", "#1a2e3b")
+        .attr("stroke-width", 1.5);
+
+      // 坐标轴
+      svg.append("g")
+        .attr("transform", `translate(0,${yScale(0)})`)
+        .call(d3.axisBottom(xScale).tickValues([-0.5, 0.5, 1.0, 1.5, 2.0]).tickSizeOuter(0))
+        .style("font", "10px system-ui");
+      svg.append("g")
+        .attr("transform", `translate(${xScale(0)},0)`)
+        .call(d3.axisLeft(yScale).tickValues([-0.5, 0.5, 1.0, 1.5, 2.0]).tickSizeOuter(0))
+        .style("font", "10px system-ui");
+      svg.append("text")
+        .attr("x", xScale(0))
+        .attr("dx", "-9")
+        .attr("y", yScale(0))
+        .attr("dy", "9")
+        .attr("text-anchor", "end")
+        .attr("dominant-baseline", "hanging")
+        .style("font", "10px system-ui")
+        .text("0.0");
+      svg.append('polyline')
+        .call(arrow, xScale(0), yScale(0), xScale(0), yScale(s + 1.02 * VIEW_MARGIN), { arrowLength: 10, arrowWidth: 8 })
+      svg.append('polyline')
+        .call(arrow, xScale(0), yScale(0), xScale(s + 1.02 * VIEW_MARGIN), yScale(0), { arrowLength: 10, arrowWidth: 8 })
+
+      // 三个圆盘的颜色
+      const colors = ['#e07b30', '#3a7abf', '#7a4faa'];
+
+      // 轨迹折线容器
+      const trailG = svg.selectAll("g.trail")
+        .data(d3.range(3))
+        .join("g")
+        .attr("class", "trail");
+
+      // 圆盘容器
+      const discG = svg.selectAll("g.disc")
+        .data(d3.range(3))
+        .join("g")
+        .attr("class", "disc");
+
+      // 状态信息文本。lang 是因为页面是 lang="en"，这一行是汉字，
+      // 读屏该用中文音念
+      const infoText = svg.append("text")
+        .attr("x", margin.left)
+        .attr("y", margin.top - 10)
+        .style("font", "16px system-ui")
+        .attr("fill", "#333")
+        .attr("lang", "zh-CN");
+
+      /* ── 画一帧 ──────────────────────────────────────────────
+         笔记本里这是 chart cell 中 for…of 的循环体，原样搬过来，只是
+         从「每帧跑一次」变成被调用一次。 */
+      function paint(state) {
+        // 更新轨迹
+        trailG.each(function (d, i) {
+          const polyline = d3.select(this).select("polyline");
+          const points = state.trails[i].map(p => `${xScale(p[0])},${yScale(p[1])}`).join(" ");
+          if (polyline.empty()) {
+            d3.select(this).append("polyline")
+              .attr("points", points)
+              .attr("fill", "none")
+              .attr("stroke", colors[i])
+              .attr("stroke-width", 1.3)
+              .attr("opacity", 0.75);
+          } else {
+            polyline.attr("points", points);
+          }
+        });
+
+        // 更新圆盘
+        const radiusPx = r * (xScale(1) - xScale(0)); // 圆的像素半径（保持比例）
+        discG.each(function (d, i) {
+          const cx = state.params[i * 2];
+          const cy = state.params[i * 2 + 1];
+          const px = xScale(cx);
+          const py = yScale(cy);
+
+          let g = d3.select(this);
+
+          // 填充圆
+          let fillCircle = g.select("circle.disc-fill");
+          if (fillCircle.empty()) fillCircle = g.append("circle").attr("class", "disc-fill");
+          fillCircle
+            .attr("cx", px)
+            .attr("cy", py)
+            .attr("r", radiusPx)
+            .attr("fill", d3.rgb(colors[i]).copy({ opacity: 0.22 }));
+
+          // 轮廓圆
+          let strokeCircle = g.select("circle.disc-stroke");
+          if (strokeCircle.empty()) strokeCircle = g.append("circle").attr("class", "disc-stroke");
+          strokeCircle
+            .attr("cx", px)
+            .attr("cy", py)
+            .attr("r", radiusPx)
+            .attr("fill", "none")
+            .attr("stroke", colors[i])
+            .attr("stroke-width", 1.4);
+
+          // 圆心点
+          let centerCircle = g.select("circle.disc-center");
+          if (centerCircle.empty()) centerCircle = g.append("circle").attr("class", "disc-center");
+          centerCircle
+            .attr("cx", px)
+            .attr("cy", py)
+            .attr("r", 3)
+            .attr("fill", colors[i]);
+        });
+
+        // 更新文字
+        infoText.text(
+          `迭代: ${state.iter} | 软覆盖: ${(state.soft * 100).toFixed(3)}% | 硬覆盖: ${(state.hard * 100).toFixed(3)}% | 最佳: ${(state.bestHard * 100).toFixed(3)}%`
+        );
+      }
+
+      /* ── 播放 ────────────────────────────────────────────────
+         笔记本里 chart cell 顶部那句 `replay;` 是个依赖声明：点一次
+         Replay，整个 cell 重算一遍。这里等价于每次 play() 都把生成器
+         重开一把。
+
+         一帧一次迭代（笔记本里那 251 帧也是逐帧消费的）。一次迭代实测
+         ~5.6ms，大头是 gradient 要调 7 遍 softCov、每遍 10000 个样本
+         × 3 个圆，所以 250 次大约 4 秒，和笔记本的观感一致。跑完就停，
+         不循环。 */
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let cancel = null;                    // 停掉当前这一跑；null = 没在跑
+
+      function play(animate) {
+        if (cancel) cancel();
+
+        const iter = discCoverageOptimization();
+        trailG.selectAll("polyline").remove();   // 上一跑的轨迹清掉，重画
+
+        if (animate) {
+          let raf = 0;
+          const tick = () => {
+            const { value, done } = iter.next();
+            if (done) return;                    // 250 次跑完就停
+            paint(value);
+            raf = requestAnimationFrame(tick);
+          };
+          cancel = () => cancelAnimationFrame(raf);
+          tick();                                // 第 0 帧（随机起点）立刻出来
+          return;
+        }
+
+        /* 减弱动态效果：站里的约定是「压制自动播、不压制用户点」（见
+           assets/js/scrubber.js）。这页没有现成的静止帧可跳 —— 终点那帧
+           也得算出来 —— 所以先把起点画出来（别让坐标系空着），再分片把
+           整个下降算完、只画终点：每片 25 次迭代 ≈ 140ms，10 片、一共
+           ~1.5 秒，片与片之间让出事件循环。一次同步算完要 1.4 秒，那样
+           会把页面整个冻住。 */
+        const SLICE = 25;
+        let timer = 0;
+        let last = iter.next().value;   // 第 0 帧，随机起点
+        paint(last);
+
+        const slice = () => {
+          for (let i = 0; i < SLICE; i++) {
+            const { value, done } = iter.next();
+            if (done) {
+              paint(last);              // 只画终点，中间过程一帧都不画
+              return;
+            }
+            last = value;
+          }
+          timer = setTimeout(slice, 0);
+        };
+        cancel = () => clearTimeout(timer);
+        slice();
+      }
+
+      /* Replay 按钮。脚本建的（HTML 里只有个空盒子），和小龙虾那页的
+         进度条同理：类名和 min-height 都写在静态 HTML / CSS 里，高度
+         先占住，按钮冒出来时页脚不会跳。 */
+      const replay = document.createElement('button');
+      replay.type = 'button';
+      replay.textContent = 'Replay';
+      replay.addEventListener('click', () => play(true));
+      document.getElementById('controls').append(replay);
+
+      play(!reduced.matches);    // 进页面就播；减弱动态效果时走上面那条
+
+      return svg.node();
+    });
+  </script>
+
+</body>
+</html>

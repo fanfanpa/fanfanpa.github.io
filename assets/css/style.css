@@ -397,11 +397,16 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
 .work-plot[data-state="failed"] { aspect-ratio: auto; }
 .work-plot[data-state="failed"] .work-plot__note { display: block; }
 
-/* ── 播放控制条（assets/js/scrubber.js）─────────────────────
+/* ── 播放控制条（动画作品页图下面那一行）─────────────────────
 
-   动画作品页通用的进度条 + 播放/暂停。放在 .work-plot 外面：那个容器的
-   高度被上面的 aspect-ratio 钉死，里面的 frame 还是绝对定位的，控件塞
-   进去一定和图重叠；而且 plot-work 会 replaceChildren 把容器整个清空。
+   控件的来源现在有两个：assets/js/scrubber.js 建的「进度条 + 播放/暂停」，
+   以及 works/2026-06/covering-square 那个照搬笔记本、只有一个 Replay 按钮
+   的。两条共用下面这一整套：排版、空盒子占位、图失败时收掉、work--fit 下
+   和图一起收窄。
+
+   放在 .work-plot 外面：那个容器的高度被上面的 aspect-ratio 钉死，里面的
+   frame 还是绝对定位的，控件塞进去一定和图重叠；而且 plot-work 会
+   replaceChildren 把容器整个清空。
 
    类名不带 work- 前缀 —— 模块不假设自己长在作品页里，以后别处要用直接搬。
 
@@ -431,9 +436,13 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
   z-index: 1;
 }
 
+/* 兜个下限，别让文字在 Play / Pause 之间换的时候按钮跟着抽。用 min-width
+   而不是 width：意图一样（这两页现在量出来都是 72px），但以后哪页的按钮
+   文字写长一点（比如 Replay 这种整词），是按钮自己撑宽，不是字挤到边框
+   外面。 */
 .scrubber button {
   flex: none;
-  width: 5.5em;          /* 文字在 Play / Pause 之间换，不定宽滑块会跟着挪 */
+  min-width: 5.5em;
   height: 32px;
   padding: 0 12px;
   font: inherit;
