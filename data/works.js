@@ -21,6 +21,14 @@
 window.WORKS = [
 
   {
+    title: 'Armadillo Earth',
+    date:  '2026-03',
+    href:  'works/2026-03/armadillo-earth/',
+    thumb: 'works/2026-03/armadillo-earth/thumb.jpg',
+    tags:  ['Map Projection']
+  },
+
+  {
     title: 'Covering a Square with Three Discs: A Gradient Descent Animation',
     date:  '2026-06',
     href:  'works/2026-06/covering-square/',

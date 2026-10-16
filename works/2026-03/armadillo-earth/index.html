@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Armadillo Earth</title>
+  <meta name="description" content="An animation of a world map drawn with two Armadillo projections joined into a single egg-shaped globe that rotates continuously. Black landmasses on an ivory sphere, with a gray graticule; every frame is projected live in the browser.">
+
+  <link rel="stylesheet" href="../../../assets/css/style.css">
+  <link rel="icon" href="data:,">
+
+  <!-- 图里没有文字，不用拉 webfont 下来。只留 preconnect，让模块脚本
+       import d3 的时候省一次握手。 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <noscript>
+    <style>
+      /* 脚本被禁就画不出图：撤掉为图预留的高度、把下面那段文字说明
+         显示出来，页面不会留一块空白。控件行也一样 —— Play 按钮是
+         脚本建的，控制条只剩个空盒子，留着白白占一条高度。 */
+      .work-plot { aspect-ratio: auto; }
+      .work-plot__note { display: block; }
+      .scrubber { display: none; }
+    </style>
+  </noscript>
+
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+
+      <a class="brand" href="../../../index.html">X.B.</a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="../../../index.html#works">Visualizations</a>
+      </nav>
+
+      <ul class="social" aria-label="My accounts">
+        <li>
+          <a data-social="weibo" href="#" aria-label="Weibo" title="Weibo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM9.05 17.219c-.384.616-1.208.884-1.829.602-.612-.279-.793-.991-.406-1.593.379-.595 1.176-.861 1.793-.601.622.263.82.972.442 1.592zm1.27-1.627c-.141.237-.449.353-.689.253-.236-.09-.313-.361-.177-.586.138-.227.436-.346.672-.24.239.09.315.36.18.601l.014-.028zm.176-2.719c-1.893-.493-4.033.45-4.857 2.118-.836 1.704-.026 3.591 1.886 4.21 1.983.64 4.318-.341 5.132-2.179.8-1.793-.201-3.642-2.161-4.149zm7.563-1.224c-.346-.105-.57-.18-.405-.615.375-.977.42-1.804 0-2.404-.781-1.112-2.915-1.053-5.364-.03 0 0-.766.331-.571-.271.376-1.217.315-2.224-.27-2.809-1.338-1.337-4.869.045-7.888 3.08C1.309 10.87 0 13.273 0 15.348c0 3.981 5.099 6.395 10.086 6.395 6.536 0 10.888-3.801 10.888-6.82 0-1.822-1.547-2.854-2.915-3.284v.01zm1.908-5.092c-.766-.856-1.908-1.187-2.96-.962-.436.09-.706.511-.616.932.09.42.511.691.932.602.511-.105 1.067.044 1.442.465.376.421.466.977.316 1.473-.136.406.089.856.51.992.405.119.857-.105.992-.512.33-1.021.12-2.178-.646-3.035l.03.045zm2.418-2.195c-1.576-1.757-3.905-2.419-6.054-1.968-.496.104-.812.587-.706 1.081.104.496.586.813 1.082.707 1.532-.331 3.185.15 4.296 1.383 1.112 1.246 1.429 2.943.947 4.416-.165.48.106 1.007.586 1.157.479.165.991-.104 1.157-.586.675-2.088.241-4.478-1.338-6.235l.03.045z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="x" href="#" aria-label="X" title="X">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="github" href="#" aria-label="GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+        </li>
+        <li>
+          <a data-social="observable" href="#" aria-label="Observable" title="Observable">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20c-1.065 0-1.988-.232-2.77-.696a4.7 4.7 0 0 1-1.794-1.89 9.97 9.97 0 0 1-.916-2.53A13.613 13.613 0 0 1 6.23 12c0-.766.05-1.499.152-2.2.1-.699.285-1.41.556-2.132A6.803 6.803 0 0 1 7.98 5.79a4.725 4.725 0 0 1 1.668-1.293C10.337 4.165 11.12 4 12 4c1.065 0 1.988.232 2.77.696a4.7 4.7 0 0 1 1.794 1.89c.418.795.723 1.639.916 2.53.192.891.29 1.853.29 2.884 0 .766-.05 1.499-.152 2.2a9.812 9.812 0 0 1-.567 2.132 7.226 7.226 0 0 1-1.042 1.878c-.418.53-.97.962-1.657 1.293-.688.332-1.471.497-2.352.497zm2.037-5.882c.551-.554.858-1.32.848-2.118 0-.824-.276-1.53-.827-2.118C13.506 9.294 12.82 9 12 9c-.82 0-1.506.294-2.058.882A2.987 2.987 0 0 0 9.115 12c0 .824.276 1.53.827 2.118.552.588 1.238.882 2.058.882.82 0 1.5-.294 2.037-.882zM12 24c6.372 0 11.538-5.373 11.538-12S18.372 0 12 0 .462 5.373.462 12 5.628 24 12 24Z"/></svg>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </header>
+
+  <!-- work--fit：把图和控件一起收窄，好让「滚过标题之后」这一屏正好被图
+       和控件占满。
+
+       --plot-ratio 只给这条规则用（见 style.css 第 7 节）：
+       1000 / 618 ≈ 1.6181。图是横的，同样一屏高度能横着铺开 1.618 倍的
+       宽度 —— 不写它的话收窄规则会按正方形算，图被压到 828×512，
+       白白空掉三分之二屏。正方形的那些页不写这个变量，取默认值 1。 -->
+  <main class="wrap work work--fit" style="--plot-ratio: 1.6181">
+
+    <a class="back" href="../../../index.html#works">← All work</a>
+
+    <h1>Armadillo Earth</h1>
+
+    <!-- 这张图不是 <img>，而是下面那段模块脚本现场画出来的 <canvas>，
+         并且一直在动：每帧把地球多转 0.4° 再重画一遍。
+
+         --plot-w / --plot-h 和脚本里的画布是同一组数字：浏览器先按这个
+         比例把高度占住，图晚一点画出来也不会让页面跳一下 —— 相当于原来
+         <img> 上写 width/height 属性的作用。
+
+         显示尺寸交给 CSS 里那条 .work-plot canvas { width: 100%;
+         height: auto }：canvas 的 width / height 属性给了固有比例，等比
+         缩放到容器宽度，所以不用像小龙虾那页再套一层 transform 缩放壳。
+
+         图万一没画出来（CDN 连不上、断网、脚本报错），脚本自己会把
+         data-state 设成 failed，site.js 里还有个超时兜底；CSS 接到这个
+         状态就撤掉预留的高度、把下面这段文字显示出来。
+         它和这张图本来的 alt 大意相同。 -->
+    <div class="work-plot" id="plot" aria-busy="true"
+         style="--plot-w: 1000; --plot-h: 618">
+      <p class="work-plot__note">Two Armadillo projections — the same equal-area projection, one centred at longitude 180° and one at −180° — joined along the antimeridian into a single egg-shaped world map. Black landmasses on an ivory sphere, with a gray graticule, rotating continuously; the map is projected from scratch on every frame, and each of the two panels keeps its own thin black frame.</p>
+    </div>
+
+    <!-- 控件行。这页照搬笔记本，只有 Play / Pause，没有进度条，但复用了
+         .scrubber 那一套：胶囊按钮、min-height 占位、图失败时跟着隐藏、
+         work--fit 下和图一起收窄。按钮是脚本建的，所以这里是个空盒子。 -->
+    <div class="scrubber" id="controls" role="group" aria-label="Animation controls"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© <span id="year">2026</span> X.B.</p>
+    </div>
+  </footer>
+
+  <script src="../../../data/site.js"></script>
+  <script src="../../../assets/js/site.js"></script>
+
+  <!-- 绘图代码来自 Observable 笔记本，按 cell 顺序改写成一个普通模块。
+       和笔记本的差异只有这几处：
+
+         · width / height 是 Observable 的反应式变量（跟着 cell 宽度走），
+           这里钉成常数 500 / 618；画布是 width*2 × height = 1000×618
+         · DOM.context2d 换成自己建 canvas：按 devicePixelRatio 放大
+           width / height 属性，再 setTransform 缩放回去（Observable 在
+           context2d 里做的就是这件事），之后一律按 1000×618 的用户坐标画
+         · Armadillo_projection1 / 2 是两个逐字相同的 cell，只差
+           lambda0 = ±180°，合成一个工厂函数；算式一个符号没动
+         · 两个 rotate 分别给了名字（笔记本里都是 var rotate，同一个作用域
+           里连着声明两次）
+         · 播放由 Play / Pause 按钮控，笔记本是靠 invalidation 停的
+         · 多了「减弱动态效果」那一条分支，站里的约定，见下面
+
+       取数、两个投影的 translate、render() 的每一步、每帧 +0.4° 都原样。
+
+       这类页面必须过 HTTP 服务器才能看：type="module" 和跨域 fetch 在
+       file:// 下会被 CORS 拒掉（海岸线是从 unpkg 取的，d3 从 jsdelivr 取）。 -->
+  <script type="module">
+    import { renderD3 } from '../../../assets/js/plot-work.js';
+
+    renderD3(document.getElementById('plot'), async ({ d3 }) => {
+
+      /* ── 画布 ────────────────────────────────────────────────
+         笔记本：width = 500、height = 618，两个面板各占 width 宽，
+         合起来 1000×618。 */
+      const width = 500;
+      const height = 618;
+
+      // 每帧转过的角度：笔记本里是 velocity * 20 = 0.02 * 20，60fps 下
+      // 约 15 秒一圈。跟着帧率走，笔记本就是这样，不改成按时间算。
+      const velocity = 0.02;
+
+      /* ── 取数 ────────────────────────────────────────────────
+         海岸线来自 https://github.com/Fil/visionscarto-world-atlas，
+         和笔记本同一个地址、同一份文件（100KB，浏览器会缓存）。
+         经纬网是 d3 现算的 10° 网格。 */
+      const land = await d3.json('https://unpkg.com/visionscarto-world-atlas@0.0.6/world/110m_land.geojson');
+      const graticule = d3.geoGraticule10();
+      const outline = { type: 'Sphere' };
+
+      /* ── 投影 ────────────────────────────────────────────────
+         Armadillo_projection1 和 2 是两个逐字相同的 cell，只差
+         lambda0 = ±180°（一个是东经 180° 的那半，一个是西经 180° 的
+         那半）。合成一个工厂函数，算式一个符号没动（只有 let → const、
+         phi_s → phiS，以及那个三元表达式改写成 if）：
+
+           θ = λ − λ₀
+           φ_s = −atan(cos(θ/2) / tan(π/9))
+
+         φ_s 是这只蛋的下缘：比它更南的纬度一律压到这条线上，投影
+         只画到这儿为止 —— 蛋的两头就是被它收尖的。 */
+      function armadilloRaw(lambda0) {
+        return (lambda, phi) => {
+          const phi0 = 20 * Math.PI / 180;
+
+          const theta = lambda - lambda0;
+
+          const phiS = -Math.atan(Math.cos(theta / 2) / Math.tan(Math.PI / 9));
+          if (phi < phiS) phi = phiS;
+
+          const x = (1 + Math.cos(phi)) * Math.sin(theta / 2);
+          const y = (1 + Math.sin(phi0) - Math.cos(phi0)) + Math.sin(phi) * Math.cos(phi0) - (1 + Math.cos(phi)) * Math.sin(phi0) * Math.cos(theta / 2);
+
+          return [x, y];
+        };
+      }
+
+      /* 笔记本里没有 .scale()，用 geoProjection 的默认值 150。
+         translate 的落点是 raw(0,0) 的像（d3 先 recenter 再平移），
+         而这两个 raw 在 (0,0) 处分别映到 (−2, …) 和 (+2, …)：所以
+         200 和 300 不是随手写的，两个 lobe 正好在 x = 500（面板接缝）
+         拼上，合起来是 600 宽、402.6 高的一整只蛋。 */
+      const leftProj = d3.geoProjection(armadilloRaw(180 * Math.PI / 180)).translate([width - 300, height / 2]);
+      const rightProj = d3.geoProjection(armadilloRaw(-180 * Math.PI / 180)).translate([300, height / 2]);
+
+      /* 画布。笔记本里是 DOM.context2d(width*2, height)：Observable 会
+         按 devicePixelRatio 放大 canvas.width / height 属性，再把
+         context 缩放回去，这里自己做同一件事 —— 属性是物理像素（高分
+         屏才不糊），setTransform 之后一律按 1000×618 的用户坐标画，
+         和笔记本同一套数字。
+
+         显示尺寸交给 CSS：canvas 的 width / height 属性给出了固有比例，
+         width: 100% + height: auto 会等比缩到容器宽度，所以不用像小龙虾
+         那页量容器宽度、也不需要 ResizeObserver —— 备选分辨率只跟 dpr 走，
+         dpr 变了由下面那个 resize 兜住。 */
+      let dpr = window.devicePixelRatio || 1;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = width * 2 * dpr;
+      canvas.height = height * dpr;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // canvas 里的东西读屏读不到（SVG 那几页是 Plot 给挂的 role / label）
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', 'An animated egg-shaped world map: two Armadillo projections joined at the antimeridian, black landmasses on an ivory globe with a gray graticule, rotating continuously.');
+
+      /* ── 画一帧 ──────────────────────────────────────────────
+         笔记本里的 render()，每一步都没动（只是双引号换成了单引号）。
+
+         两个面板各自 save / clip(自己的轮廓) / 铺底 / 画经纬网和陆地 /
+         restore：clip 用的是投影后的 {type: "Sphere"}，它投出来正好是
+         这个 lobe 自己的轮廓，所以这段 clip 是紧贴着蛋形收边的。右面板
+         外面套一层 translate(width, 0)，画到画布右半边去。
+
+         先画的两条 strokeRect 是面板边框：线宽只有 0.1，被后面的蛋
+         盖住大半，只有蛋没铺到的地方（比如 x = 500 那条接缝的上半段）
+         还看得见一条细线。 */
+      const render = function () {
+
+        const leftpath = d3.geoPath(leftProj, context);
+        const rightpath = d3.geoPath(rightProj, context);
+
+        context.clearRect(0, 0, width * 2, height);
+
+        // 添加边框
+        context.save();
+        context.strokeStyle = 'black';
+        context.lineWidth = 0.1;
+        // 左地图边框
+        context.strokeRect(0, 0, width, height);
+        // 右地图边框（注意平移后坐标）
+        context.translate(width, 0);
+        context.strokeRect(0, 0, width, height);
+        context.restore();
+
+        context.save();
+        context.beginPath();
+        leftpath(outline);
+        context.clip();
+        context.fillStyle = '#fefef2';
+        context.fillRect(0, 0, width, height);
+
+        context.beginPath();
+        leftpath(graticule);
+        context.strokeStyle = '#ccc';
+        context.stroke();
+
+        context.beginPath();
+        leftpath(land);
+        context.fillStyle = '#000';
+        context.fill();
+        context.restore();
+
+        context.save();
+        context.translate(width, 0);
+        context.beginPath();
+        rightpath(outline);
+        context.clip();
+        context.fillStyle = '#fefef2';
+        context.fillRect(0, 0, width, height);
+
+        context.beginPath();
+        rightpath(graticule);
+        context.strokeStyle = '#ccc';
+        context.stroke();
+
+        context.beginPath();
+        rightpath(land);
+        context.fillStyle = '#000';
+        context.fill();
+        context.restore();
+      };
+
+      /* ── 播放 ────────────────────────────────────────────────
+         笔记本里是一个 d3.timer：每帧把两个投影的 rotate[0] 加上
+         velocity * 20，再 render 一遍。d3.timer 和 rAF 是同一个时间源，
+         所以这里仍然是「一帧一度」。.rotate() 不传参返回的是副本，
+         所以读出来改完再写回去是安全的。
+
+         笔记本的 timer 靠 invalidation 停；这里由按钮控，停的时候不
+         重画 —— 画布留着最后一帧。 */
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let timer = null;
+
+      /* 备选分辨率是建画布那一刻按 dpr 定的，浏览器缩放、或者把窗口拖到
+         另一块缩放比不同的显示器上，dpr 就变了，画布会跟着变糊（比例还是
+         对的，CSS 在管显示尺寸）。resize 里比一下，变了才重建 —— 重建会
+         清空画布，所以紧接着补画当前这一帧。 */
+      window.addEventListener('resize', () => {
+        const next = window.devicePixelRatio || 1;
+        if (next === dpr) return;
+        dpr = next;
+        canvas.width = width * 2 * dpr;
+        canvas.height = height * dpr;
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        render();
+      });
+
+      function tick() {
+        const leftRotate = leftProj.rotate();
+        leftRotate[0] += velocity * 20;
+        leftProj.rotate(leftRotate);
+
+        const rightRotate = rightProj.rotate();
+        rightRotate[0] += velocity * 20;
+        rightProj.rotate(rightRotate);
+
+        render();
+      }
+
+      function setLabel() {
+        button.textContent = timer ? 'Pause' : 'Play';
+      }
+
+      function play() {
+        if (!timer) timer = d3.timer(tick);
+        setLabel();
+      }
+
+      function pause() {
+        if (timer) { timer.stop(); timer = null; }
+        setLabel();
+      }
+
+      /* Play / Pause 按钮。脚本建的（HTML 里只有个空盒子），和小龙虾
+         那页的控件同理：类名和 min-height 都写在静态 HTML / CSS 里，
+         高度先占住，按钮冒出来时页脚不会跳。 */
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.addEventListener('click', () => (timer ? pause() : play()));
+      document.getElementById('controls').append(button);
+
+      /* 第一帧（0°）先画出来，别让画布空着。然后按站里的约定起播：
+         减弱动态效果时压制自动播，但不压制用户点 —— 这里没有「跳到最后
+         一帧」这回事（旋转是循环的），静止的第一帧就是它该停的样子；
+         点了 Play 照样转。 */
+      render();
+      setLabel();
+      if (!reduced.matches) play();
+
+      return canvas;
+    });
+  </script>
+
+</body>
+</html>

@@ -317,8 +317,13 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
    这里显式再写一遍，是为了不依赖它的内部实现。
 
    用的是后代选择器不是子选择器：图带 title / subtitle / caption 时 Plot 会
-   返回 <figure>，svg 就跑到 figure 里面去了，> svg 会匹配不到。 */
-.work-plot svg {
+   返回 <figure>，svg 就跑到 figure 里面去了，> svg 会匹配不到。
+
+   canvas 也一样（works/2026-03/armadillo-earth 是现场画的 canvas）：
+   canvas 的 width / height 属性给的就是固有比例，等比缩放到容器宽度，
+   和 viewBox 对 SVG 的作用一样。 */
+.work-plot svg,
+.work-plot canvas {
   display: block;
   width: 100%;
   height: auto;
@@ -510,10 +515,17 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
    用 svh（小视口）而不是 vh：手机上 vh 是按地址栏收起之后算的，用它会在
    地址栏还在的时候反而超出一点。
 
+   --plot-ratio 是画布的高宽比，默认 1 就是上面这套「正方形」的算法：
+   宽度上限 = 高度上限。横着的画布（armadillo-earth 是 1000×618）在同样
+   的一屏高度里能横着铺开 1.618 倍，不乘这个系数的话图会被压成 828×512、
+   空掉大半屏。变量写在页面 <main> 的行内 style 里（和 --plot-w / --plot-h
+   同一个道理：数字跟着那页的图表代码走），没写的页面取到默认值 1，算式
+   逐字退化成原来那样。
+
    只对挂了这个类的页面生效 —— grid-world 共用 .work-plot，不能被牵动。 */
 .work--fit .work-plot,
 .work--fit .scrubber {
-  max-width: min(100%, max(320px, 100svh - 72px));
+  max-width: min(100%, max(320px, (100svh - 72px) * var(--plot-ratio, 1)));
 }
 
 
