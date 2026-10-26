@@ -9,11 +9,12 @@
    html(htl) / Inputs。所以按它的设计重写成一个普通模块，把运行时那
    部分去掉。
 
-   用法（见 works/2025-11/crayfish-production-2015-2024/index.html）：
+   用法（见 assets/js/works/crayfish-production.js；作品页和首页缩略图
+   共用这份调用）：
 
-     import { createScrubber } from '../../../assets/js/scrubber.js';
+     import { createScrubber } from '../scrubber.js';
 
-     createScrubber(document.getElementById('scrubber'), {
+     createScrubber(controls, {
        values: d3.range(2015, 2025),
        format: y => `Year: ${y}`,
        label: 'Year',
@@ -91,6 +92,8 @@ export function createScrubber(mount, options = {}) {
   let intent = 'auto';                        // 'auto' | 'play' | 'pause' | 'done'
   let onScreen = true;
   let timer = null;
+  let intersectionObserver = null;
+  let reducedListener = null;
 
   /* ── 控件 ────────────────────────────────────────────────────
      mount 上的 class 是页面写在 HTML 里的：控件要等模块脚本跑起来
@@ -205,26 +208,43 @@ export function createScrubber(mount, options = {}) {
 
   /* 滚出视口就停：动画每帧要重建整棵图，看不见的时候没必要占 CPU */
   if (observe) {
-    new IntersectionObserver((entries) => {
+    intersectionObserver = new IntersectionObserver((entries) => {
       onScreen = entries[0].isIntersecting;
       sync();                                  // 不动 intent，所以手动暂停不会被它覆盖
-    }).observe(observe);
+    });
+    intersectionObserver.observe(observe);
   }
 
   /* 中途改「减弱动态效果」也生效，但只在用户没表过态的时候 ——
      用户点过播放/暂停之后，系统设置不该再改他的主意。 */
-  reduced.addEventListener('change', () => {
+  reducedListener = () => {
     if (intent === 'auto') {
       index = reduced.matches ? last : first;
       show();
       emit();
     }
     sync();
-  });
+  };
+  reduced.addEventListener('change', reducedListener);
 
   show();
   sync();
   emit();
+
+  /* 首页缩略图用完要能整个拆掉：定时器、IntersectionObserver 和
+     reduced 监听都得停，否则卡片换掉之后它们还攥着整棵图的闭包。 */
+  mount.destroy = () => {
+    stop();
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+      intersectionObserver = null;
+    }
+    if (reducedListener) {
+      reduced.removeEventListener('change', reducedListener);
+      reducedListener = null;
+    }
+    mount.replaceChildren();
+  };
 
   return mount;
 }

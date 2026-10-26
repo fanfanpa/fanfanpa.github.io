@@ -6,13 +6,15 @@ description: 往 fanfanpa.github.io 作品集里加一个新作品——用户�
 # 加一个新作品
 
 站点是纯静态、无构建步骤，从 `main` 分支直接发布。加一个作品＝两个新文件
-（`index.html` + `thumb.jpg`）＋ `data/works.js` 里加一条。首页的年份分组、
-卡片网格、标签筛选按钮全是 `assets/js/app.js` 现算的，**不用碰任何 HTML/JS/CSS**。
+（`index.html` + `thumb.jpg`）＋ `data/works.js` 里加一条。代码现场绘制的
+另加 `assets/js/works/<slug>.js` 绘图模块；要上首页现场缩略图，还得在
+`assets/js/home-thumbs.js` 的 `VIEWS` 里登记。首页的年份分组、卡片网格、
+标签筛选按钮全是 `assets/js/app.js` 现算的，**不用碰首页 HTML/CSS**。
 
 硬规矩（许可证、水印、JPEG 画质、CDN import、推送走代理）都在仓库根的
 [CLAUDE.md](../../../CLAUDE.md)，先读它，这里不重复。
 
-> 这两个文件会被线上站点原样提供（仓库有 `.nojekyll`，点目录也照发），
+> 这些文件都会被线上站点原样提供（仓库有 `.nojekyll`，点目录也照发），
 > 只写可以公开的东西。
 
 ## 第 0 步：判断是哪一类
@@ -21,7 +23,7 @@ description: 往 fanfanpa.github.io 作品集里加一个新作品——用户�
 |---|---|---|
 | 素材 | 一张画好的位图（QGIS / Illustrator 出的） | Observable 笔记本，或一段绘图代码 |
 | 页面里 | 一张 `<img>` | `<div class="work-plot">` + `<script type="module">` |
-| 目录里 | `index.html` · `<slug>.jpg` · `thumb.jpg` | `index.html` · `thumb.jpg`（**没有原图**） |
+| 目录里 | `index.html` · `<slug>.jpg` · `thumb.jpg` | `index.html` · `thumb.jpg`（**没有原图**）；绘图代码在 `assets/js/works/` |
 | 参照页 | [works/2026-09/qianjiang-bus-route/](../../../works/2026-09/qianjiang-bus-route/) | [works/2026-03/armadillo-earth/](../../../works/2026-03/armadillo-earth/)、[works/2026-06/covering-square/](../../../works/2026-06/covering-square/) |
 | 规程 | [references/page-image.md](references/page-image.md) | [references/page-code.md](references/page-code.md) |
 
@@ -51,12 +53,15 @@ works/<YYYY-MM>/<slug>/     ← 必须正好两层，别再加一层
 - 一句话描述 —— 同时进 `<meta name="description">` 和图的 `alt`／代码页的
   `__note` 兜底文字（两处措辞可以不同，但都得说清画的是什么）
 
-代码页还要多问三个（armadillo 那次就是这么定的）：
+代码页还要多问四个（armadillo 那次就是这么定的）：
 
 1. **画面范围** —— 照笔记本整块画布，还是裁到主体？
 2. **数据来源** —— 运行时从 CDN/远程取，还是内联进页面？（小数据内联是
    既定偏好：「将 csv 数据直接写进 html 中，不要复制文件了」）
 3. **控件** —— 不要 / 只有 Play-Pause / 完整播放条（`createScrubber`）
+4. **要不要首页现场缩略图** —— 要的话画法必须抽成 `assets/js/works/` 里的
+   共享模块，并在 `data/works.js` 的 `liveThumb` 和 `home-thumbs.js` 的
+   `VIEWS` 里登记；目前只支持已有的三种画法，新的要先接进去
 
 ## 第 3 步：写页面
 
@@ -68,7 +73,10 @@ works/<YYYY-MM>/<slug>/     ← 必须正好两层，别再加一层
   `tools/compress.py` 的正则逐字依赖它。
 - **代码页**：从 [works/2026-03/armadillo-earth/index.html](../../../works/2026-03/armadillo-earth/index.html)
   复制外壳（head 的 preconnect + noscript、site-header、footer、两个普通
-  script），内容段照 page-code.md 的契约写。
+  script），内容段照 page-code.md 的契约写。绘图代码优先放进
+  `assets/js/works/<slug>.js`，页面只 `import` 并传容器 / 控件；这样才能
+  和首页现场缩略图共用同一份画法。只在作品页出现、确定不上首页的图，才
+  照 grid-world 把 build 内联在页面里。
 
 ## 第 4 步：出缩略图
 
@@ -76,13 +84,15 @@ works/<YYYY-MM>/<slug>/     ← 必须正好两层，别再加一层
 python tools/mkthumb.py "works/2026-10/<slug>/<原图>"     # 默认 600×400，q88，输出同目录 thumb.jpg
 ```
 
-代码页也一样，用一张代表帧的截图当源图。站点上 18 张 `thumb.jpg` **全是
-600×400**（300×200 卡片的 2 倍图）。thumb 要进 git。
+代码页也一样，用一张代表帧的截图当源图。**即使首页要现场缩略图，
+`thumb.jpg` 也必须出** —— 它是加载前、减弱动效和失败时的静态图。站点上
+18 张 `thumb.jpg` **全是 600×400**（300×200 卡片的 2 倍图）。thumb 要进 git。
 
 ## 第 5 步：登记
 
-`data/works.js` 数组最前面加一条（字段顺序固定 title, date, href, thumb, tags；
-文件里的顺序是手工维护的「最新在前」）：
+`data/works.js` 数组最前面加一条（字段顺序固定
+`title, date, href, thumb, [liveThumb], tags`；文件里的顺序是手工维护的
+「最新在前」）：
 
 ```js
   {
@@ -90,9 +100,13 @@ python tools/mkthumb.py "works/2026-10/<slug>/<原图>"     # 默认 600×400，
     date:  '2026-10',
     href:  'works/2026-10/<slug>/',
     thumb: 'works/2026-10/<slug>/thumb.jpg',
+    // liveThumb: '…',   // 只有要做首页现场缩略图时才写
     tags:  ['…']
   },
 ```
+
+`liveThumb` 的可选值必须和 `assets/js/home-thumbs.js` 的 `VIEWS` 键对得上；
+目前只有 `armadillo`、`covering-square`、`crayfish` 三种。
 
 `href` 以 `/` 结尾 —— app.js 会自己补 `index.html`，本地双击打开也不报错。
 
@@ -119,6 +133,8 @@ python tools/compress.py --apply
 3. 断网兜底：`Network.setBlockedURLs` 之后显兜底文字、不留一块空白
 4. **老套件 t1–t6（约 157 条）全绿** —— 动过公共 CSS/JS 的话这是重点
 5. 首页：新卡片出现在对的年份分组、缩略图不糊、点得进去
+6. 有现场缩略图的话：滚进视口自动播、滚出去停、减弱动效时保持静态
+   JPEG、CDN 断掉仍显示 `thumb.jpg`，390px 窄屏不横向溢出
 
 ## 第 8 步：提交推送
 
@@ -137,8 +153,10 @@ git -c http.proxy=http://127.0.0.1:10809 -c https.proxy=http://127.0.0.1:10809 p
 - [ ] 页面文字全英文
 - [ ] `thumb.jpg` 600×400，进 git
 - [ ] `data/works.js` 加了条目，`href` 尾斜杠，位置在数组最前
+- [ ] 代码页的绘图代码在 `assets/js/works/<slug>.js`；有现场缩略图的话，
+      `liveThumb` 和 `home-thumbs.js` 的 `VIEWS` 都登记了
 - [ ] `python tools/compress.py` 预览 `问题: 0`
-- [ ] t1–t6 全绿 ＋ 这一页自己的专项探针
+- [ ] t1–t6 全绿 ＋ 这一页自己的专项探针（有现场缩略图再加首页的那组）
 - [ ] `git status --short` 只有该动的那几个文件
 - [ ] 推送走了代理
 

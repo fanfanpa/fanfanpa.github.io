@@ -12,6 +12,10 @@
               这样本地双击打开（file:// 协议）也不会报错。
      thumb    缩略图路径。建议做成 300x200 的 2 倍图（600x400），
               留空或路径写错都会自动显示占位块
+     liveThumb 可选。首页现场绘制的缩略图类型，对应
+              assets/js/home-thumbs.js 里的一个画法；目前只有
+              'armadillo'、'covering-square'、'crayfish' 三种。
+              不写就只显示 thumb 静态图。
      tags     标签数组，会自动变成顶部的「筛选按钮」
 
    排序：不用手动排。app.js 会自动按年份倒序分组、
@@ -25,6 +29,7 @@ window.WORKS = [
     date:  '2026-03',
     href:  'works/2026-03/armadillo-earth/',
     thumb: 'works/2026-03/armadillo-earth/thumb.jpg',
+    liveThumb: 'armadillo',
     tags:  ['Map Projection']
   },
 
@@ -33,6 +38,7 @@ window.WORKS = [
     date:  '2026-06',
     href:  'works/2026-06/covering-square/',
     thumb: 'works/2026-06/covering-square/thumb.jpg',
+    liveThumb: 'covering-square',
     tags:  ['Animation']
   },
 
@@ -81,6 +87,7 @@ window.WORKS = [
     date:  '2025-11',
     href:  'works/2025-11/crayfish-production-2015-2024/',
     thumb: 'works/2025-11/crayfish-production-2015-2024/thumb.jpg',
+    liveThumb: 'crayfish',
     tags:  ['Animation']
   },
   

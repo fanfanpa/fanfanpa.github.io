@@ -31,10 +31,26 @@ t1–t6 约 157 条，是回归基线：**动过公共 CSS/JS 就必须全绿**�
 goto, waitFor, sleep, ready, close }`，headless Chrome 走 CDP，
 `evaluate` 自动 `awaitPromise` + `returnByValue`。
 
+## 首页现场缩略图
+
+t1–t6 不覆盖首页卡片。改 `assets/js/home-thumbs.js`、`assets/js/app.js`
+或三个共享模块之后，至少另跑一组探针：
+
+- 滚到卡片可见：`.card.is-live` 出现，画面在变；
+- 滚出视口后停住，滚回来继续；
+- `prefers-reduced-motion: reduce`：不产生 `.card__live`，静态 JPEG 可见；
+- 拦掉 CDN：`.card__live` 被删，静态 JPEG 可见，卡片仍点得进去；
+- 390px：卡片和图不撑出横向滚动条；
+- 标题、坐标轴、标签的颜色和作品页一致（卡片是 `<a>`，别让它们继承链接蓝）；
+- 点击命中 `<a>` 而不是 `.card__live`（图层是 `pointer-events: none`）。
+
 ## 常踩的坑
 
 - `scrollTo` 要带 `behavior: 'instant'` —— 站点有 `scroll-behavior: smooth`，
   不带的话量到的是滚动途中的位置。
+- 首页缩略图是懒挂的：直接跳到页面底不等于经过中间那张卡片。要逐段滚，
+  或先 `scrollIntoView` 到目标卡片，再等 `.card.is-live`，否则会把
+  「没触发 observer」误判成「没挂上」。
 - Chrome 在 Windows 上把窗口最小宽度卡在 512px，**量 390px 窄屏必须套 iframe**
   （`harness/narrow.html` 就是干这个的）。
 - 模拟 CDN 挂掉用 `Network.setBlockedURLs`，但**要看拦的是谁的地址**：

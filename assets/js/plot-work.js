@@ -17,8 +17,9 @@
      3. 失败时把容器标成 data-state="failed"，style.css 里那两条规则
         会撤掉为图预留的高度、把容器里那段文字说明露出来
 
-   用法见 works/2025-11/grid-world/index.html 和
-   works/2026-06/covering-square/index.html：
+   用法见 works/2025-11/grid-world/index.html（页面内联）和
+   assets/js/works/covering-square.js（作品页和首页缩略图共用的模块；
+   模块里把下面路径换成 '../plot-work.js'）：
 
      import { renderPlot } from '../../../assets/js/plot-work.js';
 

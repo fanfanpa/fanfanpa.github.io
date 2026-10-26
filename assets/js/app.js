@@ -20,6 +20,54 @@
   // 这个脚本只有首页会用到，但保险起见还是判空
   if (!yearsEl || !filtersEl || !emptyEl) return;
 
+  /* ---------- 现场缩略图（可选） ----------
+     三张动画作品的卡片可以现场画缩略图。模块用 import() 动态加载：
+     app.js 本身保持普通脚本，file:// 下也不会因为 import 语法整个
+     挂掉 —— 模块加载失败就继续用静态 JPEG。
+
+     模块自己负责懒挂载、进出视口停/续、减弱动效和失败兜底；这里只
+     给它一个根元素，并在筛选重绘前把旧卡片上的图拆掉。 */
+
+  var liveThumbs = null;
+  var liveThumbsPending = null;
+  var liveThumbsQueued = false;
+
+  function loadLiveThumbs() {
+    if (liveThumbsPending) return liveThumbsPending;
+
+    var url = new URL('assets/js/home-thumbs.js', document.baseURI).href;
+    try {
+      liveThumbsPending = import(url).then(function (module) {
+        liveThumbs = module;
+        return module;
+      }, function () {
+        liveThumbs = null;             // CDN / file:// / 旧浏览器：保持静态图
+        return null;
+      });
+    } catch (error) {
+      liveThumbsPending = Promise.resolve(null);
+    }
+    return liveThumbsPending;
+  }
+
+  function mountLiveThumbs() {
+    if (liveThumbs) {
+      liveThumbs.mount(yearsEl);
+      return;
+    }
+    if (liveThumbsQueued) return;      // 模块还在路上，等它回来挂当前这批卡片
+
+    liveThumbsQueued = true;
+    loadLiveThumbs().then(function (module) {
+      liveThumbsQueued = false;
+      if (module) module.mount(yearsEl);
+    });
+  }
+
+  function unmountLiveThumbs() {
+    if (liveThumbs) liveThumbs.unmount();
+  }
+
 
   /* ---------- 小工具 ---------- */
 
@@ -76,6 +124,12 @@
     // 卡片上没有文字，作品名靠原生悬停提示和 alt 传达
     card.title = work.title;
     card.dataset.tags = (work.tags || []).join(',');
+    if (work.liveThumb) {
+      card.dataset.liveThumb = work.liveThumb;
+      // 现场图接上之后静态 img 会被 visibility:hidden 藏起来（连同
+      // alt 一起），给链接补一个同样的名字，读屏不会突然读不出东西
+      card.setAttribute('aria-label', work.title);
+    }
 
     if (work.thumb) {
       var img = document.createElement('img');
@@ -128,6 +182,10 @@
   /* ---------- 渲染 ---------- */
 
   function render(list) {
+    // 旧卡片马上要被清掉：先停掉上面的定时器/IntersectionObserver，
+    // 否则它们会攥着已经不在 DOM 里的画布和 SVG 继续跑
+    unmountLiveThumbs();
+
     yearsEl.textContent = '';
 
     groupByYear(list).forEach(function (group) {
@@ -150,6 +208,9 @@
     });
 
     emptyEl.hidden = list.length > 0;
+
+    // 等这一批卡片进 DOM 之后再挂；模块没加载好也没关系，它会等
+    mountLiveThumbs();
   }
 
 

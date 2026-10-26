@@ -205,6 +205,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
 }
 
 .card {
+  position: relative;          /* .card__live 的定位基准 */
   display: block;
   width: var(--card-w);
   height: var(--card-h);
@@ -224,6 +225,47 @@ h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -.02em; }
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* 现场缩略图（首页那三张动画作品）。图层叠在静态图上面，但画好之前
+   是 visibility: hidden —— 静态 JPEG 先顶着，第一帧出来之后 .is-live
+   才把它藏掉。任何一步失败就整层删掉，卡片看起来和以前一样。
+   背景用白色：作品页的画布本来就是白底，和静态缩略图的留白一致。 */
+.card__live {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  color: var(--fg);             /* 卡片是 <a>，不拦一下文字会继承链接的蓝色 */
+  visibility: hidden;
+  pointer-events: none;        /* 点击、悬停都还是卡片的 */
+}
+
+.card.is-live > img,
+.card.is-live > .ph { visibility: hidden; }
+.card.is-live > .card__live { visibility: visible; }
+
+/* Armadillo 的 canvas 自带裁好的蛋形比例；按宽高上限缩进卡片，不拉伸 */
+.card__live > canvas {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Covering 的 SVG 只给了 viewBox。撑满卡片、让 preserveAspectRatio
+   自己在 300×200 里居中成 200×200（和静态缩略图一样）。
+
+   只选直接子元素：小龙虾那层里的 Plot SVG 嵌在 frame / bars / line
+   里面，要按自己的 600×600 / 500×400 固有尺寸走，不能被这条拉满。 */
+.card__live > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* 缩略图缺失或路径写错时的占位块 */
